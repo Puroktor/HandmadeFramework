@@ -1,7 +1,6 @@
 package ru.vsu.csf.skofenko.testapplication.mapper;
 
-import ru.vsu.csf.annotations.di.Component;
-import ru.vsu.csf.annotations.di.Service;
+import ru.vsu.csf.framework.di.Service;
 import ru.vsu.csf.skofenko.testapplication.dto.AttemptResultDto;
 import ru.vsu.csf.skofenko.testapplication.entity.Attempt;
 import ru.vsu.csf.skofenko.testapplication.entity.Test;

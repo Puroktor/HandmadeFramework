@@ -1,23 +1,27 @@
 package ru.vsu.csf.skofenko.testapplication.controller;
 
-import ru.vsu.csf.annotations.di.Controller;
-import ru.vsu.csf.annotations.di.Inject;
-import ru.vsu.csf.annotations.http.*;
+import ru.vsu.csf.framework.di.Controller;
+import ru.vsu.csf.framework.di.Inject;
+import ru.vsu.csf.framework.http.*;
+import ru.vsu.csf.framework.http.mapping.DeleteMapping;
+import ru.vsu.csf.framework.http.mapping.GetMapping;
+import ru.vsu.csf.framework.http.mapping.PostMapping;
+import ru.vsu.csf.framework.http.mapping.PutMapping;
 import ru.vsu.csf.skofenko.testapplication.dto.TestDto;
 import ru.vsu.csf.skofenko.testapplication.service.TestService;
 
-@Controller("api/")
+@Controller("api")
 public class TestController {
     @Inject
     private TestService testService;
 
-    @PostMapping("create-test")
-    @ResponseType(HttpStatus.CREATED)
+    @PostMapping("test")
+    @ResponseStatus(HttpStatus.CREATED)
     public TestDto createTest(@RequestBody TestDto testDto) {
         return testService.createTest(testDto);
     }
 
-    @GetMapping("get-test")
+    @GetMapping("test")
     public TestDto getTest(@Param("id") int id) {
         return testService.getTest(id);
     }
@@ -27,12 +31,12 @@ public class TestController {
         return testService.getShuffledTest(id);
     }
 
-    @PostMapping("update-test")
+    @PutMapping("test")
     public void updateTest(@Param("id") int id, @RequestBody TestDto testDto) {
         testService.updateTest(id, testDto);
     }
 
-    @PostMapping("delete-test")
+    @DeleteMapping("test")
     public void deleteTest(@Param("id") int id) {
         testService.deleteTest(id);
     }

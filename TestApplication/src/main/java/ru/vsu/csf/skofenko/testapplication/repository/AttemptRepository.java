@@ -1,6 +1,6 @@
 package ru.vsu.csf.skofenko.testapplication.repository;
 
-import ru.vsu.csf.annotations.di.Repository;
+import ru.vsu.csf.framework.di.Repository;
 import ru.vsu.csf.skofenko.testapplication.entity.Attempt;
 import ru.vsu.csf.skofenko.testapplication.entity.User;
 

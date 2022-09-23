@@ -1,6 +1,6 @@
 package ru.vsu.csf.skofenko.server.http.response;
 
-import ru.vsu.csf.annotations.http.HttpStatus;
+import ru.vsu.csf.framework.http.HttpStatus;
 import ru.vsu.csf.skofenko.server.AppProperties;
 
 import java.io.IOException;

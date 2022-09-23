@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>ru.vsu.csf.skofenko</groupId>
-            <artifactId>Annotations</artifactId>
+            <artifactId>Framework</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>

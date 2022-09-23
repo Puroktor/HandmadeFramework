@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarFile;
 
-public class WebServerApplication {
+public class Application {
 
     public static final int PORT = Integer.parseInt(AppProperties.get("port"));
     public static final String DOCKER_PATH = AppProperties.get("docker-path");
@@ -21,7 +21,7 @@ public class WebServerApplication {
     public static void main(String[] args) throws IOException {
         createServlets();
         try (ServerSocket s = new ServerSocket(PORT)) {
-            printSuccess();
+            printInfo();
             while (true) {
                 Socket ClientSocket = s.accept();
                 try {
@@ -33,7 +33,7 @@ public class WebServerApplication {
         }
     }
 
-    private static void printSuccess() {
+    private static void printInfo() {
         System.out.printf("INFO: Created %d dispatcher servlets %n", dispatchers.size());
         System.out.printf("INFO: WebServer started on port %d%n", PORT);
     }

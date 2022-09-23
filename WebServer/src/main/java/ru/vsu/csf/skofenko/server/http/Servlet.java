@@ -1,19 +1,15 @@
 package ru.vsu.csf.skofenko.server.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.vsu.csf.annotations.http.ContentType;
-import ru.vsu.csf.annotations.http.Param;
-import ru.vsu.csf.annotations.http.RequestBody;
+import ru.vsu.csf.framework.http.*;
 import ru.vsu.csf.skofenko.server.dockerlogic.ApplicationContext;
 import ru.vsu.csf.skofenko.server.dockerlogic.Endpoint;
 import ru.vsu.csf.skofenko.server.http.request.HttpRequest;
 import ru.vsu.csf.skofenko.server.http.request.RequestType;
 import ru.vsu.csf.skofenko.server.http.response.HttpResponse;
-import ru.vsu.csf.annotations.http.HttpStatus;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -27,14 +23,63 @@ public class Servlet {
         this.applicationContext = new ApplicationContext(jar);
     }
 
-    private void doGet(HttpRequest request, HttpResponse response) throws IOException {
+    private String parseMapping(HttpRequest request) {
+        String[] parts = request.getPath().split("/", 3);
+        String mapping = "";
+        if (parts.length == 3) {
+            mapping = parts[2];
+        }
+        if (mapping.endsWith("/")) {
+            mapping = mapping.substring(0, mapping.length() - 1);
+        }
+        return mapping;
+    }
+
+    private Object[] parseParams(Method method, HttpRequest request, ObjectMapper mapper) throws IOException {
+        Map<String, String> requestParams = request.getParams();
+        List<Object> params = new ArrayList<>();
+        Iterator<Class<?>> typeIterator = Arrays.stream(method.getParameterTypes()).iterator();
+        for (Annotation[] annotations : method.getParameterAnnotations()) {
+            Class<?> paramType = typeIterator.next();
+            for (Annotation annotation : annotations) {
+                if (annotation.annotationType().equals(Param.class)) {
+                    String str = requestParams.get(((Param) annotation).value());
+                    if (str == null)
+                        continue;
+                    Object object = paramType == String.class ? str : mapper.readValue(str, paramType);
+                    params.add(object);
+                } else if (annotation.annotationType().equals(RequestBody.class)) {
+                    Object object = mapper.readValue(request.getBody(), paramType);
+                    params.add(object);
+                }
+            }
+        }
+        return params.toArray();
+    }
+
+    public void doResponse(HttpRequest request, HttpResponse response) throws IOException {
+        RequestType type = request.getRequestType();
         String mapping = parseMapping(request);
-        Endpoint endpoint = applicationContext.getEndpointManager().fetchGetPoint(mapping);
+        Endpoint endpoint;
+        switch (type) {
+            case GET -> endpoint = applicationContext.getEndpointManager().fetchGetPoint(mapping);
+            case POST -> endpoint = applicationContext.getEndpointManager().fetchPostPoint(mapping);
+            case PUT -> endpoint = applicationContext.getEndpointManager().fetchPutPoint(mapping);
+            case DELETE -> endpoint = applicationContext.getEndpointManager().fetchDeletePoint(mapping);
+            default -> {
+                response.setStatus(HttpStatus.NOT_IMPLEMENTED);
+                response.send();
+                return;
+            }
+        }
         Method method = endpoint.method();
         ObjectMapper mapper = new ObjectMapper();
         Object[] params = parseParams(method, request, mapper);
-        byte[] body = null;
+        byte[] body = new byte[0];
         try {
+            ResponseStatus responseStatus = method.getAnnotation(ResponseStatus.class);
+            HttpStatus status = responseStatus == null ? HttpStatus.OK : responseStatus.value();
+            response.setStatus(status);
             ContentType typeAnnotation = method.getAnnotation(ContentType.class);
             String contentType = typeAnnotation == null ? "application/json" : typeAnnotation.value();
             response.putHeader("Content-Type", contentType);
@@ -55,72 +100,6 @@ public class Servlet {
         }
         response.setBody(body);
         response.send();
-    }
-
-    private void doPost(HttpRequest request, HttpResponse response) throws IOException {
-        String mapping = parseMapping(request);
-        Endpoint endpoint = applicationContext.getEndpointManager().fetchPostPoint(mapping);
-        Method method = endpoint.method();
-        ObjectMapper mapper = new ObjectMapper();
-        Object[] params = parseParams(method, request, mapper);
-        byte[] body = null;
-        response.putHeader("Content-Type", "application/json");
-        try {
-            Object result = method.invoke(endpoint.instance(), params);
-            String str = mapper.writeValueAsString(result);
-            body = str.getBytes(StandardCharsets.UTF_8);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        response.setBody(body);
-        response.send();
-    }
-
-    private String parseMapping(HttpRequest request) {
-        String mapping = request.getPath().split("/", 3)[2];
-        if (mapping.endsWith("/")) {
-            mapping = mapping.substring(0, mapping.length() - 1);
-        }
-        return mapping;
-    }
-
-    private Object[] parseParams(Method method, HttpRequest request, ObjectMapper mapper) throws IOException {
-        Map<String, String> requestParams = request.getParams();
-        List<Object> params = new ArrayList<>();
-        Iterator<Class<?>> typeIterator = Arrays.stream(method.getParameterTypes()).iterator();
-        for (Annotation[] annotations : method.getParameterAnnotations()) {
-            Class<?> paramType = typeIterator.next();
-            for (Annotation annotation : annotations) {
-                if (annotation.annotationType().equals(Param.class)) {
-                    String str = requestParams.get(((Param) annotation).value());
-                    Object object;
-                    if (paramType == String.class) {
-                        object = str;
-                    } else {
-                        object = mapper.readValue(str, paramType);
-                    }
-                    params.add(object);
-                } else if (annotation.annotationType().equals(RequestBody.class)) {
-                    Object object = mapper.readValue(request.getBody(), paramType);
-                    params.add(object);
-                }
-            }
-        }
-        return params.toArray();
-    }
-
-    private void doNotImplementedError(HttpResponse response) throws IOException {
-        response.setStatus(HttpStatus.NOT_IMPLEMENTED);
-        response.send();
-    }
-
-    public void doResponse(HttpRequest request, HttpResponse response) throws IOException {
-        RequestType type = request.getRequestType();
-        switch (type) {
-            case GET -> doGet(request, response);
-            case POST -> doPost(request, response);
-            default -> doNotImplementedError(response);
-        }
     }
 
 }

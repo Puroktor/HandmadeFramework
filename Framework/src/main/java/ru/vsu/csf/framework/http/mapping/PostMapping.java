@@ -1,4 +1,4 @@
-package ru.vsu.csf.annotations.http;
+package ru.vsu.csf.framework.http.mapping;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ContentType {
-    String value() default "application/json";
+public @interface PostMapping {
+    String value() default "";
 }

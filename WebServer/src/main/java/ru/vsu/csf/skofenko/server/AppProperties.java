@@ -10,7 +10,7 @@ public class AppProperties {
 
     static {
         try {
-            InputStream is = WebServerApplication.class.getResourceAsStream("/config.properties");
+            InputStream is = Application.class.getResourceAsStream("/config.properties");
             properties = new Properties();
             properties.load(is);
         } catch (IOException e) {

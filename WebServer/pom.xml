@@ -21,7 +21,7 @@
         </dependency>
         <dependency>
             <groupId>ru.vsu.csf.skofenko</groupId>
-            <artifactId>Annotations</artifactId>
+            <artifactId>Framework</artifactId>
             <version>1.0.0</version>
         </dependency>
     </dependencies>
@@ -41,7 +41,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        ru.vsu.csf.skofenko.server.WebServerApplication
+                                        ru.vsu.csf.skofenko.server.Application
                                     </mainClass>
                                 </manifest>
                             </archive>

@@ -1,7 +1,7 @@
 package ru.vsu.csf.skofenko.testapplication.service;
 
-import ru.vsu.csf.annotations.di.Inject;
-import ru.vsu.csf.annotations.di.Service;
+import ru.vsu.csf.framework.di.Inject;
+import ru.vsu.csf.framework.di.Service;
 import ru.vsu.csf.skofenko.testapplication.dto.AnswerDto;
 import ru.vsu.csf.skofenko.testapplication.dto.AttemptDto;
 import ru.vsu.csf.skofenko.testapplication.dto.AttemptResultDto;

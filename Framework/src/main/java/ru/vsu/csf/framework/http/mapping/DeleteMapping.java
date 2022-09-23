@@ -1,12 +1,12 @@
-package ru.vsu.csf.annotations.http;
+package ru.vsu.csf.framework.http.mapping;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface ResponseType {
-    HttpStatus value() default HttpStatus.OK;
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DeleteMapping {
+    String value() default "";
 }

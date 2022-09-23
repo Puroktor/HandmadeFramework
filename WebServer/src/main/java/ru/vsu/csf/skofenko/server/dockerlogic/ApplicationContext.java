@@ -1,8 +1,8 @@
 package ru.vsu.csf.skofenko.server.dockerlogic;
 
-import ru.vsu.csf.annotations.di.Controller;
-import ru.vsu.csf.annotations.di.Repository;
-import ru.vsu.csf.annotations.di.Service;
+import ru.vsu.csf.framework.di.Controller;
+import ru.vsu.csf.framework.di.Repository;
+import ru.vsu.csf.framework.di.Service;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -1,4 +1,4 @@
-package ru.vsu.csf.annotations.http;
+package ru.vsu.csf.framework.http;
 
 public enum HttpStatus {
     OK(200, "OK"),

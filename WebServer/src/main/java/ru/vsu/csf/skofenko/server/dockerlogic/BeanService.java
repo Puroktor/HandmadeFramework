@@ -1,12 +1,12 @@
 package ru.vsu.csf.skofenko.server.dockerlogic;
 
 
-import ru.vsu.csf.annotations.di.Controller;
-import ru.vsu.csf.annotations.di.Inject;
-import ru.vsu.csf.annotations.http.GetMapping;
-import ru.vsu.csf.annotations.http.HttpStatus;
-import ru.vsu.csf.annotations.http.PostMapping;
-import ru.vsu.csf.annotations.http.ResponseType;
+import ru.vsu.csf.framework.di.Controller;
+import ru.vsu.csf.framework.di.Inject;
+import ru.vsu.csf.framework.http.mapping.DeleteMapping;
+import ru.vsu.csf.framework.http.mapping.GetMapping;
+import ru.vsu.csf.framework.http.mapping.PostMapping;
+import ru.vsu.csf.framework.http.mapping.PutMapping;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -26,16 +26,20 @@ class BeanService {
 
     static void parseEndpoints(Class<?> clazz, Object instance, EndpointManager manager) {
         Controller annotation = clazz.getDeclaredAnnotation(Controller.class);
-        String base = "/" + annotation.value();
+        String base = annotation.value();
         for (Method method : clazz.getDeclaredMethods()) {
             GetMapping getMapping = method.getAnnotation(GetMapping.class);
             PostMapping postMapping = method.getAnnotation(PostMapping.class);
-            ResponseType responseType = method.getAnnotation(ResponseType.class);
-            HttpStatus status = responseType == null ? HttpStatus.OK : responseType.value();
+            PutMapping putMapping = method.getAnnotation(PutMapping.class);
+            DeleteMapping deleteMapping = method.getAnnotation(DeleteMapping.class);
             if (getMapping != null) {
-                manager.putGetPoint(base + getMapping.value(), new Endpoint(instance, method, status));
+                manager.putGetPoint("%s/%s".formatted(base, getMapping.value()), new Endpoint(instance, method));
             } else if (postMapping != null) {
-                manager.putPostPoint(base + postMapping.value(), new Endpoint(instance, method, status));
+                manager.putPostPoint("%s/%s".formatted(base, postMapping.value()), new Endpoint(instance, method));
+            } else if (putMapping != null) {
+                manager.putPutPoint("%s/%s".formatted(base, putMapping.value()), new Endpoint(instance, method));
+            } else if (deleteMapping != null) {
+                manager.putDeletePoint("%s/%s".formatted(base, deleteMapping.value()), new Endpoint(instance, method));
             }
         }
     }

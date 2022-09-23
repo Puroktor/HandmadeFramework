@@ -1,4 +1,4 @@
-package ru.vsu.csf.annotations.http;
+package ru.vsu.csf.framework.http.mapping;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
