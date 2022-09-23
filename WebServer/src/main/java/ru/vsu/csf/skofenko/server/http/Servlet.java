@@ -109,7 +109,11 @@ public class Servlet {
             try {
                 Exception cause = (Exception) invException.getCause();
                 endpoint = applicationContext.getEndpointManager().fetchExceptionPoint(cause.getClass());
-                setResponse(response, endpoint, new Object[]{cause}, mapper);
+                if (endpoint == null) {
+                    throw invException;
+                } else {
+                    setResponse(response, endpoint, new Object[]{cause}, mapper);
+                }
             } catch (Exception e) {
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                 e.printStackTrace();

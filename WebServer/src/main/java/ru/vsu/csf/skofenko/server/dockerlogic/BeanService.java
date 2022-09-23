@@ -11,7 +11,7 @@ import ru.vsu.csf.framework.http.mapping.PutMapping;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
+import java.util.Set;
 
 class BeanService {
 
@@ -47,13 +47,26 @@ class BeanService {
         }
     }
 
-    static void setFields(Class<?> clazz, Object instance, Map<Class<?>, Object> map) {
-        for (Field field : clazz.getDeclaredFields()) {
+    static void setFields(Object instance, Set<Object> instanceSet) {
+        for (Field field : instance.getClass().getDeclaredFields()) {
             if (field.getAnnotation(Inject.class) != null) {
-                Object value = map.get(field.getType());
+                Class<?> type = field.getType();
+                Object suitable = null;
+                for (Object object : instanceSet) {
+                    if (type.isAssignableFrom(object.getClass())) {
+                        if (suitable == null) {
+                            suitable = object;
+                        } else {
+                            throw new IllegalStateException(field + " has several beans to inject");
+                        }
+                    }
+                }
+                if (suitable == null) {
+                    throw new IllegalStateException(field + " has no beans to inject");
+                }
                 field.setAccessible(true);
                 try {
-                    field.set(instance, value);
+                    field.set(instance, suitable);
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException("Couldn't set injection fields", e);
                 }

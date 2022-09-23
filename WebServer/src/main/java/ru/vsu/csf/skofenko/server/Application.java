@@ -1,5 +1,7 @@
 package ru.vsu.csf.skofenko.server;
 
+import ru.vsu.csf.framework.di.ResourceManager;
+import ru.vsu.csf.skofenko.server.dockerlogic.ResourceManagerImpl;
 import ru.vsu.csf.skofenko.server.http.Server;
 import ru.vsu.csf.skofenko.server.http.Servlet;
 
@@ -22,7 +24,7 @@ public class Application {
         createServlets();
         try (ServerSocket s = new ServerSocket(PORT)) {
             printInfo();
-            while (true) {
+            while (dispatchers.size() > 0) {
                 Socket ClientSocket = s.accept();
                 try {
                     new Thread(new Server(ClientSocket)).start();
@@ -31,6 +33,7 @@ public class Application {
                 }
             }
         }
+
     }
 
     private static void printInfo() {
@@ -46,12 +49,16 @@ public class Application {
         return new File(DOCKER_PATH).listFiles();
     }
 
-    public static void createServlets() throws IOException {
+    public static void createServlets() {
         for (File file : getAllFiles()) {
             if (file.getName().endsWith(".jar")) {
-                JarFile jarFile = new JarFile(file);
-                dispatchers.put(jarFile.getName().substring(DOCKER_PATH.length() + 1,
-                        jarFile.getName().length() - ".jar".length()), new Servlet(jarFile));
+                try {
+                    JarFile jarFile = new JarFile(file);
+                    dispatchers.put(jarFile.getName().substring(DOCKER_PATH.length() + 1,
+                            jarFile.getName().length() - ".jar".length()), new Servlet(jarFile));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
