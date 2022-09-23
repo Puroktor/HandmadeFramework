@@ -1,8 +1,8 @@
 package ru.vsu.csf.skofenko.server.dockerlogic;
 
-
 import ru.vsu.csf.framework.di.Controller;
 import ru.vsu.csf.framework.di.Inject;
+import ru.vsu.csf.framework.http.ExceptionMapping;
 import ru.vsu.csf.framework.http.mapping.DeleteMapping;
 import ru.vsu.csf.framework.http.mapping.GetMapping;
 import ru.vsu.csf.framework.http.mapping.PostMapping;
@@ -26,12 +26,13 @@ class BeanService {
 
     static void parseEndpoints(Class<?> clazz, Object instance, EndpointManager manager) {
         Controller annotation = clazz.getDeclaredAnnotation(Controller.class);
-        String base = annotation.value();
+        String base = annotation == null ? "" : annotation.value();
         for (Method method : clazz.getDeclaredMethods()) {
             GetMapping getMapping = method.getAnnotation(GetMapping.class);
             PostMapping postMapping = method.getAnnotation(PostMapping.class);
             PutMapping putMapping = method.getAnnotation(PutMapping.class);
             DeleteMapping deleteMapping = method.getAnnotation(DeleteMapping.class);
+            ExceptionMapping exceptionMapping = method.getAnnotation(ExceptionMapping.class);
             if (getMapping != null) {
                 manager.putGetPoint("%s/%s".formatted(base, getMapping.value()), new Endpoint(instance, method));
             } else if (postMapping != null) {
@@ -40,6 +41,8 @@ class BeanService {
                 manager.putPutPoint("%s/%s".formatted(base, putMapping.value()), new Endpoint(instance, method));
             } else if (deleteMapping != null) {
                 manager.putDeletePoint("%s/%s".formatted(base, deleteMapping.value()), new Endpoint(instance, method));
+            } else if (exceptionMapping != null) {
+                manager.putExceptionPoint(exceptionMapping.value(), new Endpoint(instance, method));
             }
         }
     }

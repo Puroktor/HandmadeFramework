@@ -10,6 +10,7 @@ import ru.vsu.csf.skofenko.server.http.response.HttpResponse;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -57,6 +58,29 @@ public class Servlet {
         return params.toArray();
     }
 
+    private void setResponse(HttpResponse response, Endpoint endpoint, Object[] params, ObjectMapper mapper) throws Exception {
+        Method method = endpoint.method();
+        ResponseStatus responseStatus = method.getAnnotation(ResponseStatus.class);
+        HttpStatus status = responseStatus == null ? HttpStatus.OK : responseStatus.value();
+        response.setStatus(status);
+        ContentType typeAnnotation = method.getAnnotation(ContentType.class);
+        String contentType = typeAnnotation == null ? "application/json" : typeAnnotation.value();
+        byte[] body = new byte[0];
+        switch (contentType) {
+            case ("image/jpeg"), ("image/gif") ->
+                    body = Base64.getDecoder().decode(method.invoke(endpoint.instance(), params).toString());
+            case ("text/html; charset=UTF-8"), ("text/css"), ("application/javascript") ->
+                    body = method.invoke(endpoint.instance(), params).toString().getBytes(StandardCharsets.UTF_8);
+            case ("application/json") -> {
+                Object result = method.invoke(endpoint.instance(), params);
+                String str = mapper.writeValueAsString(result);
+                body = str.getBytes(StandardCharsets.UTF_8);
+            }
+        }
+        response.putHeader("Content-Type", contentType);
+        response.setBody(body);
+    }
+
     public void doResponse(HttpRequest request, HttpResponse response) throws IOException {
         RequestType type = request.getRequestType();
         String mapping = parseMapping(request);
@@ -72,34 +96,28 @@ public class Servlet {
                 return;
             }
         }
-        Method method = endpoint.method();
+        if (endpoint == null) {
+            response.setStatus(HttpStatus.NOT_FOUND);
+            response.send();
+            return;
+        }
         ObjectMapper mapper = new ObjectMapper();
-        Object[] params = parseParams(method, request, mapper);
-        byte[] body = new byte[0];
+        Object[] params = parseParams(endpoint.method(), request, mapper);
         try {
-            ResponseStatus responseStatus = method.getAnnotation(ResponseStatus.class);
-            HttpStatus status = responseStatus == null ? HttpStatus.OK : responseStatus.value();
-            response.setStatus(status);
-            ContentType typeAnnotation = method.getAnnotation(ContentType.class);
-            String contentType = typeAnnotation == null ? "application/json" : typeAnnotation.value();
-            response.putHeader("Content-Type", contentType);
-            switch (contentType) {
-                case ("image/jpeg"), ("image/gif") ->
-                        body = Base64.getDecoder().decode(method.invoke(endpoint.instance(), params).toString());
-                case ("text/html; charset=UTF-8"), ("text/css"), ("application/javascript") ->
-                        body = method.invoke(endpoint.instance(), params).toString().getBytes(StandardCharsets.UTF_8);
-                case ("application/json") -> {
-                    Object result = method.invoke(endpoint.instance(), params);
-                    String str = mapper.writeValueAsString(result);
-                    body = str.getBytes(StandardCharsets.UTF_8);
-                }
+            setResponse(response, endpoint, params, mapper);
+        } catch (InvocationTargetException invException) {
+            try {
+                Exception cause = (Exception) invException.getCause();
+                endpoint = applicationContext.getEndpointManager().fetchExceptionPoint(cause.getClass());
+                setResponse(response, endpoint, new Object[]{cause}, mapper);
+            } catch (Exception e) {
+                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                e.printStackTrace();
             }
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
             e.printStackTrace();
         }
-        response.setBody(body);
         response.send();
     }
-
 }

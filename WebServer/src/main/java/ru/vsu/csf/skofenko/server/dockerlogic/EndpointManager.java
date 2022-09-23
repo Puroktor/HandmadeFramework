@@ -8,6 +8,7 @@ public class EndpointManager {
     private final Map<String, Endpoint> postPointsMap = new HashMap<>();
     private final Map<String, Endpoint> putPointsMap = new HashMap<>();
     private final Map<String, Endpoint> deletePointsMap = new HashMap<>();
+    private final Map<Class<? extends Exception>, Endpoint> exceptionPointMap = new HashMap<>();
 
     public Endpoint putGetPoint(String mapping, Endpoint endpoint) {
         return getPointsMap.put(mapping, endpoint);
@@ -25,6 +26,10 @@ public class EndpointManager {
         return deletePointsMap.put(mapping, endpoint);
     }
 
+    public Endpoint putExceptionPoint(Class<? extends Exception> mapping, Endpoint endpoint) {
+        return exceptionPointMap.put(mapping, endpoint);
+    }
+
     public Endpoint fetchGetPoint(String mapping) {
         return getPointsMap.get(mapping);
     }
@@ -39,5 +44,9 @@ public class EndpointManager {
 
     public Endpoint fetchDeletePoint(String mapping) {
         return deletePointsMap.get(mapping);
+    }
+
+    public Endpoint fetchExceptionPoint(Class<? extends Exception> mapping) {
+        return exceptionPointMap.get(mapping);
     }
 }

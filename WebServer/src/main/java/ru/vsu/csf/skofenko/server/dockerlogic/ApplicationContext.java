@@ -1,6 +1,7 @@
 package ru.vsu.csf.skofenko.server.dockerlogic;
 
 import ru.vsu.csf.framework.di.Controller;
+import ru.vsu.csf.framework.di.ExceptionHandler;
 import ru.vsu.csf.framework.di.Repository;
 import ru.vsu.csf.framework.di.Service;
 
@@ -25,7 +26,7 @@ public class ApplicationContext {
         Collection<Class<?>> classes = getAllClasses(jar);
         Map<Class<?>, Object> classToInstanceMap = new HashMap<>();
         for (Class<?> clazz : classes) {
-            if (clazz.getAnnotation(Controller.class) != null) {
+            if (clazz.getAnnotation(Controller.class) != null || clazz.getAnnotation(ExceptionHandler.class) != null) {
                 Object instance = BeanService.initialise(clazz);
                 classToInstanceMap.put(clazz, instance);
                 BeanService.parseEndpoints(clazz, instance, endpointManager);
