@@ -13,13 +13,13 @@ public class ExceptionController {
 
     @ExceptionMapping(NoSuchElementException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorDto handleNoSuchElementException(NoSuchElementException e){
+    public ErrorDto handleNoSuchElementException(NoSuchElementException e) {
         return new ErrorDto(e.getMessage());
     }
 
     @ExceptionMapping(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorDto handleNoSuchElementException(IllegalArgumentException e){
+    public ErrorDto handleNoSuchElementException(IllegalArgumentException e) {
         return new ErrorDto(e.getMessage());
     }
 }

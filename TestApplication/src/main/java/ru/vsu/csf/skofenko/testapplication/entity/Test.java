@@ -1,6 +1,9 @@
 package ru.vsu.csf.skofenko.testapplication.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 @Data

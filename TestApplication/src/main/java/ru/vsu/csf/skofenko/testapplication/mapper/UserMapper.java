@@ -1,11 +1,9 @@
 package ru.vsu.csf.skofenko.testapplication.mapper;
 
-import ru.vsu.csf.framework.di.Service;
 import ru.vsu.csf.skofenko.testapplication.dto.UserDto;
 import ru.vsu.csf.skofenko.testapplication.dto.UserRegistrationDto;
 import ru.vsu.csf.skofenko.testapplication.entity.User;
 
-@Service
 public class UserMapper {
 
     public UserDto toDto(User user) {

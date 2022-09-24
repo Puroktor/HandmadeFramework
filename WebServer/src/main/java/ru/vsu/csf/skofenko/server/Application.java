@@ -1,7 +1,5 @@
 package ru.vsu.csf.skofenko.server;
 
-import ru.vsu.csf.framework.di.ResourceManager;
-import ru.vsu.csf.skofenko.server.dockerlogic.ResourceManagerImpl;
 import ru.vsu.csf.skofenko.server.http.Server;
 import ru.vsu.csf.skofenko.server.http.Servlet;
 

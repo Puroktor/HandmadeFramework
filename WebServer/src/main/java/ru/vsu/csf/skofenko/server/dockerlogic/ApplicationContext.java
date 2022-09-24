@@ -1,9 +1,5 @@
 package ru.vsu.csf.skofenko.server.dockerlogic;
 
-import ru.vsu.csf.framework.di.Controller;
-import ru.vsu.csf.framework.di.ExceptionHandler;
-import ru.vsu.csf.framework.di.Repository;
-import ru.vsu.csf.framework.di.Service;
 import ru.vsu.csf.skofenko.server.Application;
 
 import java.io.File;
@@ -14,7 +10,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -25,16 +24,7 @@ public class ApplicationContext {
 
     public ApplicationContext(JarFile jar) {
         Collection<Class<?>> classes = getAllClasses(jar);
-        Set<Object> instanceSet = new HashSet<>();
-        for (Class<?> clazz : classes) {
-            if (clazz.getAnnotation(Controller.class) != null || clazz.getAnnotation(ExceptionHandler.class) != null) {
-                Object instance = BeanService.initialise(clazz);
-                instanceSet.add(instance);
-                BeanService.parseEndpoints(clazz, instance, endpointManager);
-            } else if (clazz.getAnnotation(Service.class) != null || clazz.getAnnotation(Repository.class) != null) {
-                instanceSet.add(BeanService.initialise(clazz));
-            }
-        }
+        Set<Object> instanceSet = BeanService.createInstances(classes, endpointManager);
         ResourceManagerImpl resourceManager = new ResourceManagerImpl(getResourceFile(jar).getPath() + "\\");
         instanceSet.add(resourceManager);
         for (Object object : instanceSet) {

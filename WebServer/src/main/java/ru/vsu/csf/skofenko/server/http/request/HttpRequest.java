@@ -51,7 +51,7 @@ public class HttpRequest {
         String[] requestLine = lines[0].split(" ");
         try {
             requestType = RequestType.valueOf(requestLine[0]);
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             requestType = RequestType.OTHER;
         }
 

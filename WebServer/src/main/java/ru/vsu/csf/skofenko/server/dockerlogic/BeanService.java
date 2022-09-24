@@ -1,7 +1,6 @@
 package ru.vsu.csf.skofenko.server.dockerlogic;
 
-import ru.vsu.csf.framework.di.Controller;
-import ru.vsu.csf.framework.di.Inject;
+import ru.vsu.csf.framework.di.*;
 import ru.vsu.csf.framework.http.ExceptionMapping;
 import ru.vsu.csf.framework.http.mapping.DeleteMapping;
 import ru.vsu.csf.framework.http.mapping.GetMapping;
@@ -11,11 +10,13 @@ import ru.vsu.csf.framework.http.mapping.PutMapping;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 class BeanService {
 
-    static Object initialise(Class<?> clazz) {
+    private static Object initialise(Class<?> clazz) {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
@@ -24,7 +25,41 @@ class BeanService {
         }
     }
 
-    static void parseEndpoints(Class<?> clazz, Object instance, EndpointManager manager) {
+    static Set<Object> createInstances(Collection<Class<?>> classes, EndpointManager endpointManager) {
+        Set<Object> instanceSet = new HashSet<>();
+        for (Class<?> clazz : classes) {
+            if (clazz.getAnnotation(Controller.class) != null || clazz.getAnnotation(ExceptionHandler.class) != null) {
+                Object instance = initialise(clazz);
+                instanceSet.add(instance);
+                parseEndpoints(clazz, instance, endpointManager);
+            } else if (clazz.getAnnotation(Service.class) != null || clazz.getAnnotation(Repository.class) != null) {
+                instanceSet.add(initialise(clazz));
+            } else if (clazz.getAnnotation(Config.class) != null) {
+                createBeans(clazz, instanceSet);
+            }
+        }
+        return instanceSet;
+    }
+
+    private static void createBeans(Class<?> clazz, Set<Object> instanceSet) {
+        Object config = BeanService.initialise(clazz);
+        for (Method method : clazz.getDeclaredMethods()) {
+            Bean beanAnnotation = method.getAnnotation(Bean.class);
+            if (method.getReturnType().equals(Void.TYPE)) {
+                throw new IllegalStateException("%s Bean method is void".formatted(method));
+            }
+            if (beanAnnotation != null) {
+                try {
+                    Object bean = method.invoke(config);
+                    instanceSet.add(bean);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException("%s Could not create a bean!".formatted(method), e);
+                }
+            }
+        }
+    }
+
+    private static void parseEndpoints(Class<?> clazz, Object instance, EndpointManager manager) {
         Controller annotation = clazz.getDeclaredAnnotation(Controller.class);
         String base = annotation == null ? "" : annotation.value();
         for (Method method : clazz.getDeclaredMethods()) {

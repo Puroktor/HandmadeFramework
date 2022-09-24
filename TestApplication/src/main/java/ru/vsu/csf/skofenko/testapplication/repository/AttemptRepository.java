@@ -26,7 +26,7 @@ public class AttemptRepository {
     public List<Attempt> findAllByUserOrderByDateTimeDesc(User user) {
         List<Attempt> attempts = new ArrayList<>();
         for (Attempt attempt : map.values()) {
-            if(attempt.getUser().equals(user)){
+            if (attempt.getUser().equals(user)) {
                 attempts.add(attempt);
             }
         }

@@ -2,7 +2,10 @@ package ru.vsu.csf.skofenko.testapplication.controller;
 
 import ru.vsu.csf.framework.di.Controller;
 import ru.vsu.csf.framework.di.Inject;
-import ru.vsu.csf.framework.http.*;
+import ru.vsu.csf.framework.http.HttpStatus;
+import ru.vsu.csf.framework.http.Param;
+import ru.vsu.csf.framework.http.RequestBody;
+import ru.vsu.csf.framework.http.ResponseStatus;
 import ru.vsu.csf.framework.http.mapping.DeleteMapping;
 import ru.vsu.csf.framework.http.mapping.GetMapping;
 import ru.vsu.csf.framework.http.mapping.PostMapping;
