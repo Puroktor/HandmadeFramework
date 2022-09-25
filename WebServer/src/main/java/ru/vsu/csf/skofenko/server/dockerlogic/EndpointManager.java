@@ -2,6 +2,7 @@ package ru.vsu.csf.skofenko.server.dockerlogic;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class EndpointManager {
     private final Map<String, Endpoint> getPointsMap = new HashMap<>();
@@ -30,23 +31,23 @@ public class EndpointManager {
         return exceptionPointMap.put(mapping, endpoint);
     }
 
-    public Endpoint fetchGetPoint(String mapping) {
-        return getPointsMap.get(mapping);
+    public Optional<Endpoint> fetchGetPoint(String mapping) {
+        return Optional.ofNullable(getPointsMap.get(mapping));
     }
 
-    public Endpoint fetchPostPoint(String mapping) {
-        return postPointsMap.get(mapping);
+    public Optional<Endpoint> fetchPostPoint(String mapping) {
+        return Optional.ofNullable(postPointsMap.get(mapping));
     }
 
-    public Endpoint fetchPutPoint(String mapping) {
-        return putPointsMap.get(mapping);
+    public Optional<Endpoint> fetchPutPoint(String mapping) {
+        return Optional.ofNullable(putPointsMap.get(mapping));
     }
 
-    public Endpoint fetchDeletePoint(String mapping) {
-        return deletePointsMap.get(mapping);
+    public Optional<Endpoint> fetchDeletePoint(String mapping) {
+        return Optional.ofNullable(deletePointsMap.get(mapping));
     }
 
-    public Endpoint fetchExceptionPoint(Class<? extends Exception> mapping) {
-        return exceptionPointMap.get(mapping);
+    public Optional<Endpoint> fetchExceptionPoint(Class<? extends Exception> mapping) {
+        return Optional.ofNullable(exceptionPointMap.get(mapping));
     }
 }

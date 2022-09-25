@@ -84,19 +84,22 @@ public class Servlet {
     public void doResponse(HttpRequest request, HttpResponse response) throws IOException {
         RequestType type = request.getRequestType();
         String mapping = parseMapping(request);
-        Endpoint endpoint;
+        Optional<Endpoint> optionalEndpoint;
         switch (type) {
-            case GET -> endpoint = applicationContext.getEndpointManager().fetchGetPoint(mapping);
-            case POST -> endpoint = applicationContext.getEndpointManager().fetchPostPoint(mapping);
-            case PUT -> endpoint = applicationContext.getEndpointManager().fetchPutPoint(mapping);
-            case DELETE -> endpoint = applicationContext.getEndpointManager().fetchDeletePoint(mapping);
+            case GET -> optionalEndpoint = applicationContext.getEndpointManager().fetchGetPoint(mapping);
+            case POST -> optionalEndpoint = applicationContext.getEndpointManager().fetchPostPoint(mapping);
+            case PUT -> optionalEndpoint = applicationContext.getEndpointManager().fetchPutPoint(mapping);
+            case DELETE -> optionalEndpoint = applicationContext.getEndpointManager().fetchDeletePoint(mapping);
             default -> {
                 response.setStatus(HttpStatus.NOT_IMPLEMENTED);
                 response.send();
                 return;
             }
         }
-        if (endpoint == null) {
+        Endpoint endpoint;
+        if (optionalEndpoint.isPresent()) {
+            endpoint = optionalEndpoint.get();
+        } else {
             response.setStatus(HttpStatus.NOT_FOUND);
             response.send();
             return;
@@ -108,12 +111,9 @@ public class Servlet {
         } catch (InvocationTargetException invException) {
             try {
                 Exception cause = (Exception) invException.getCause();
-                endpoint = applicationContext.getEndpointManager().fetchExceptionPoint(cause.getClass());
-                if (endpoint == null) {
-                    throw invException;
-                } else {
-                    setResponse(response, endpoint, new Object[]{cause}, mapper);
-                }
+                endpoint = applicationContext.getEndpointManager().fetchExceptionPoint(cause.getClass())
+                        .orElseThrow(() -> invException);
+                setResponse(response, endpoint, new Object[]{cause}, mapper);
             } catch (Exception e) {
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                 e.printStackTrace();
