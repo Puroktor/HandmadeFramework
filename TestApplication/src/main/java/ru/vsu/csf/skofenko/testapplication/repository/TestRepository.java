@@ -1,34 +1,45 @@
 package ru.vsu.csf.skofenko.testapplication.repository;
 
 import ru.vsu.csf.framework.di.Repository;
+import ru.vsu.csf.framework.persistence.CrudRepository;
 import ru.vsu.csf.skofenko.testapplication.entity.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Repository
-public class TestRepository {
+public class TestRepository implements CrudRepository<Test, Integer> {
     private final Map<Integer, Test> map = new HashMap<>();
     private int generatedId = 1;
 
-    public Test save(Test test) {
-        if (test.getId() == null) {
-            test.setId(generatedId++);
+    @Override
+    public Test save(Test entity) {
+        if (entity.getId() == null) {
+            entity.setId(generatedId++);
         }
-        map.put(test.getId(), test);
-        return test;
+        map.put(entity.getId(), entity);
+        return entity;
     }
 
-    public Optional<Test> findById(int id) {
-        return Optional.ofNullable(map.get(id));
+    @Override
+    public Optional<Test> findById(Integer integer) {
+        return Optional.ofNullable(map.get(integer));
     }
 
-    public void delete(Test test) {
-        map.remove(test.getId());
+    @Override
+    public List<Test> findAll() {
+        return map.values().stream().toList();
     }
 
-    public void delete(int id) {
-        map.remove(id);
+    @Override
+    public void delete(Test entity) {
+        deleteById(entity.getId());
+    }
+
+    @Override
+    public void deleteById(Integer integer) {
+        map.remove(integer);
     }
 }

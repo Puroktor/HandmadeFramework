@@ -1,16 +1,14 @@
 package ru.vsu.csf.skofenko.testapplication.repository;
 
 import ru.vsu.csf.framework.di.Repository;
+import ru.vsu.csf.framework.persistence.CrudRepository;
 import ru.vsu.csf.skofenko.testapplication.entity.Role;
 import ru.vsu.csf.skofenko.testapplication.entity.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
-public class UserRepository {
+public class UserRepository implements CrudRepository<User, Integer> {
     private final Map<Integer, User> map = new HashMap<>();
     private int generatedId = 3;
 
@@ -21,26 +19,38 @@ public class UserRepository {
                 Role.TEACHER, "University", null, null, "teacher@gmail.com", new ArrayList<>()));
     }
 
-    public User save(User user) {
-        if (user.getId() == null) {
-            user.setId(generatedId++);
+    @Override
+    public User save(User entity) {
+        if (entity.getId() == null) {
+            entity.setId(generatedId++);
         }
-        map.put(user.getId(), user);
-        return user;
+        map.put(entity.getId(), entity);
+        return entity;
+    }
+
+    @Override
+    public Optional<User> findById(Integer integer) {
+        return Optional.ofNullable(map.get(integer));
+    }
+
+    @Override
+    public List<User> findAll() {
+        return map.values().stream().toList();
+    }
+
+    @Override
+    public void delete(User entity) {
+        deleteById(entity.getId());
+    }
+
+    @Override
+    public void deleteById(Integer integer) {
+        map.remove(integer);
     }
 
     public Optional<User> findByNickname(String nickname) {
-        User foundUser = null;
-        for (User user : map.values()) {
-            if (user.getNickname().equals(nickname)) {
-                foundUser = user;
-                break;
-            }
-        }
-        return Optional.ofNullable(foundUser);
-    }
-
-    public Optional<User> findById(int userId) {
-        return Optional.ofNullable(map.get(userId));
+        return findAll().stream()
+                .filter(user -> user.getNickname().equals(nickname))
+                .findFirst();
     }
 }

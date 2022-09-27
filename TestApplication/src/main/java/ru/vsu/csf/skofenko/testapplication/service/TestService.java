@@ -73,7 +73,7 @@ public class TestService {
         });
         Test newTest = testMapper.toEntity(newTestDto);
         newTest.setId(id);
-        testRepository.delete(id);
+        testRepository.deleteById(id);
         testRepository.save(newTest);
     }
 
