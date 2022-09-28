@@ -22,4 +22,10 @@ public class ExceptionController {
     public ErrorDto handleNoSuchElementException(IllegalArgumentException e) {
         return new ErrorDto(e.getMessage());
     }
+
+    @ExceptionMapping(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorDto handleIllegalStateException(IllegalStateException e) {
+        return new ErrorDto(e.getMessage());
+    }
 }
