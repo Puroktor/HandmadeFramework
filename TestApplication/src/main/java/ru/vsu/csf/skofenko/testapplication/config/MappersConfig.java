@@ -2,9 +2,7 @@ package ru.vsu.csf.skofenko.testapplication.config;
 
 import ru.vsu.csf.framework.di.Bean;
 import ru.vsu.csf.framework.di.Config;
-import ru.vsu.csf.skofenko.testapplication.mapper.AttemptMapper;
-import ru.vsu.csf.skofenko.testapplication.mapper.TestMapper;
-import ru.vsu.csf.skofenko.testapplication.mapper.UserMapper;
+import ru.vsu.csf.skofenko.testapplication.mapper.*;
 
 @Config
 public class MappersConfig {
@@ -22,5 +20,15 @@ public class MappersConfig {
     @Bean
     public UserMapper userMapper() {
         return new UserMapper();
+    }
+
+    @Bean
+    public QuestionMapper questionMapper() {
+        return new QuestionMapper();
+    }
+
+    @Bean
+    public AnswerMapper answerMapper() {
+        return new AnswerMapper();
     }
 }

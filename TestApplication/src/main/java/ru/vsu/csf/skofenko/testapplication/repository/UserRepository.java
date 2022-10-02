@@ -1,5 +1,6 @@
 package ru.vsu.csf.skofenko.testapplication.repository;
 
+import org.postgresql.ds.PGConnectionPoolDataSource;
 import ru.vsu.csf.framework.di.Inject;
 import ru.vsu.csf.framework.di.Repository;
 import ru.vsu.csf.framework.persistence.CrudRepository;
@@ -15,13 +16,13 @@ import java.util.Optional;
 public class UserRepository implements CrudRepository<User, Integer> {
 
     @Inject
-    private Connection connection;
+    private PGConnectionPoolDataSource dataSource;
 
     @Override
     public User save(User entity) {
-        try {
-            String query = "INSERT INTO system_user (name, nickname, password, email, university, role," +
-                    "year, group_number, id) VALUES (?,?,?,?,?,?,?,?, default)";
+        String query = "INSERT INTO system_user (name, nickname, password, email, university, role," +
+                "year, group_number, id) VALUES (?,?,?,?,?,?,?,?, default)";
+        try (Connection connection = dataSource.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(
                     entity.getId() == null ? query : query.replace("default", "?"),
                     Statement.RETURN_GENERATED_KEYS);
@@ -41,7 +42,7 @@ public class UserRepository implements CrudRepository<User, Integer> {
                 if (rs.next()) {
                     Integer id = rs.getInt(1);
                     return new User(id, entity.getName(), entity.getNickname(), entity.getPassword(), entity.getRole(),
-                            entity.getUniversity(), entity.getYear(), entity.getGroupNumber(), entity.getEmail(), null);
+                            entity.getUniversity(), entity.getYear(), entity.getGroupNumber(), entity.getEmail());
                 }
                 return null;
             }
@@ -52,8 +53,8 @@ public class UserRepository implements CrudRepository<User, Integer> {
 
     @Override
     public Optional<User> findById(Integer integer) {
-        try {
-            String query = "SELECT * FROM system_user WHERE id = ?";
+        String query = "SELECT * FROM system_user WHERE id = ?";
+        try (Connection connection = dataSource.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setInt(1, integer);
             try (ResultSet rs = statement.executeQuery()) {
@@ -70,8 +71,8 @@ public class UserRepository implements CrudRepository<User, Integer> {
 
     @Override
     public List<User> findAll() {
-        try {
-            String query = "SELECT * FROM system_user";
+        String query = "SELECT * FROM system_user";
+        try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             List<User> users = new ArrayList<>();
             try (ResultSet rs = statement.executeQuery(query)) {
@@ -92,8 +93,8 @@ public class UserRepository implements CrudRepository<User, Integer> {
 
     @Override
     public void deleteById(Integer integer) {
-        try {
-            String query = "DELETE FROM system_user WHERE id = ?";
+        String query = "DELETE FROM system_user WHERE id = ?";
+        try (Connection connection = dataSource.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setInt(1, integer);
             statement.execute();
@@ -103,8 +104,8 @@ public class UserRepository implements CrudRepository<User, Integer> {
     }
 
     public Optional<User> findByNickname(String nickname) {
-        try {
-            String query = "SELECT * FROM system_user WHERE nickname = ?";
+        String query = "SELECT * FROM system_user WHERE nickname = ?";
+        try (Connection connection = dataSource.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, nickname);
             try (ResultSet rs = statement.executeQuery()) {
@@ -123,6 +124,6 @@ public class UserRepository implements CrudRepository<User, Integer> {
         return new User(rs.getInt("id"), rs.getString("name"), rs.getString("nickname"),
                 rs.getString("password"), Role.values()[rs.getInt("role")],
                 rs.getString("university"), rs.getObject("year", Integer.class),
-                rs.getObject("group_number", Integer.class), rs.getString("email"), null);
+                rs.getObject("group_number", Integer.class), rs.getString("email"));
     }
 }

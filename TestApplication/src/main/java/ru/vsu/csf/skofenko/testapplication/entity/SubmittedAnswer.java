@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Answer {
-    private Integer id;
-    private String text;
-    private Boolean isRight;
-    private Integer questionId;
+public class SubmittedAnswer {
+    private Integer answerId;
+    private Integer attemptId;
+    private boolean submittedValue;
 }

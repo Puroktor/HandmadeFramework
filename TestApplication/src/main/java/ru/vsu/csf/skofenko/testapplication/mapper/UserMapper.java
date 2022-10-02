@@ -13,6 +13,6 @@ public class UserMapper {
 
     public User toEntity(UserRegistrationDto dto) {
         return new User(null, dto.getName(), dto.getNickname(), null, dto.getRole(), dto.getUniversity(),
-                dto.getYear(), dto.getGroupNumber(), dto.getEmail(), null);
+                dto.getYear(), dto.getGroupNumber(), dto.getEmail());
     }
 }

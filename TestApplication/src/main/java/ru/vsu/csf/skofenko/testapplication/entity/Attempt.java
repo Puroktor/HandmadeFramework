@@ -4,17 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Map;
+import java.sql.Timestamp;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Attempt {
     private Integer id;
-    private User user;
-    private Test test;
+    private Integer userId;
+    private Integer testId;
     private Double score;
-    private LocalDateTime dateTime;
-    private Map<Answer, Boolean> submittedAnswers;
+    private Timestamp dateTime;
 }

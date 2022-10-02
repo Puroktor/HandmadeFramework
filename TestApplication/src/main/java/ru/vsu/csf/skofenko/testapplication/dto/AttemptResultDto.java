@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +13,7 @@ public class AttemptResultDto {
     private Integer id;
     private Integer testId;
     private String testName;
-    private LocalDateTime dateTime;
+    private Timestamp dateTime;
     private Double score;
     private Boolean hasPassed;
 }

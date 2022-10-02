@@ -8,12 +8,9 @@ import ru.vsu.csf.skofenko.testapplication.dto.AttemptResultDto;
 import ru.vsu.csf.skofenko.testapplication.dto.TestDto;
 import ru.vsu.csf.skofenko.testapplication.entity.*;
 import ru.vsu.csf.skofenko.testapplication.mapper.AttemptMapper;
-import ru.vsu.csf.skofenko.testapplication.mapper.TestMapper;
-import ru.vsu.csf.skofenko.testapplication.repository.AnswerRepository;
-import ru.vsu.csf.skofenko.testapplication.repository.AttemptRepository;
-import ru.vsu.csf.skofenko.testapplication.repository.UserRepository;
+import ru.vsu.csf.skofenko.testapplication.repository.*;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,25 +24,32 @@ public class AttemptService {
     @Inject
     private AnswerRepository answerRepository;
     @Inject
+    private QuestionRepository questionRepository;
+    @Inject
+    private TestRepository testRepository;
+    @Inject
+    private SubmittedAnswerRepository submittedAnswerRepository;
+    @Inject
     private AttemptRepository attemptRepository;
     @Inject
-    private TestMapper testMapper;
-    @Inject
     private AttemptMapper attemptMapper;
+    @Inject
+    private TestService testService;
 
-    public AttemptResultDto submitAttempt(List<AnswerDto> answers, String nickname) {
+    public AttemptResultDto submitAttempt(List<AnswerDto> answers, int userId) {
         class Score {
             private int correct;
             private int all;
         }
-        User user = userRepository.findByNickname(nickname)
-                .orElseThrow(() -> new NoSuchElementException("Invalid user nickname"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("Invalid user id"));
         HashMap<Question, Score> questionIdToScoreMap = new HashMap<>();
         Map<Answer, Boolean> submittedAnswers = new HashMap<>();
         for (AnswerDto submittedAnswer : answers) {
             Answer dbAnswer = answerRepository.findById(submittedAnswer.getId())
                     .orElseThrow(() -> new NoSuchElementException("Invalid answer Id"));
-            Question question = dbAnswer.getQuestion();
+            Question question = questionRepository.findById(dbAnswer.getQuestionId())
+                    .orElseThrow(() -> new NoSuchElementException("Invalid question Id"));
             Score score = questionIdToScoreMap.getOrDefault(question, new Score());
             if (submittedAnswer.getIsRight()) {
                 score.correct += dbAnswer.getIsRight() ? 1 : -1;
@@ -62,32 +66,45 @@ public class AttemptService {
             maxScore += entry.getKey().getMaxScore();
         }
         double scorePercentage = score / maxScore * 100;
-        Test test = questionIdToScoreMap.keySet().iterator().next().getTest();
-        Attempt attempt = attemptRepository.save(new Attempt(null, user, test, scorePercentage, LocalDateTime.now(),
-                submittedAnswers));
-        return attemptMapper.toResultDto(attempt);
+        int testId = questionIdToScoreMap.keySet().iterator().next().getTestId();
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new NoSuchElementException("Invalid test id"));
+        Attempt attempt = attemptRepository.save(new Attempt(null, userId, testId, scorePercentage,
+                new Timestamp(System.currentTimeMillis())));
+        for (Map.Entry<Answer, Boolean> entry : submittedAnswers.entrySet()) {
+            submittedAnswerRepository.save(new SubmittedAnswer(entry.getKey().getId(), attempt.getId(), entry.getValue()));
+        }
+        return attemptMapper.toResultDto(attempt, test);
     }
 
     public List<AttemptResultDto> getAttemptsResults(int userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("Invalid user nickname"));
-        List<Attempt> attempts = attemptRepository.findAllByUserOrderByDateTimeDesc(user);
+                .orElseThrow(() -> new NoSuchElementException("Invalid user id"));
+        List<Attempt> attempts = attemptRepository.findAllByUserIdOrderByDateTimeDesc(userId);
         return attempts.stream()
-                .map(attemptMapper::toResultDto)
+                .map((attempt) -> {
+                            Test test = testRepository.findById(attempt.getTestId())
+                                    .orElseThrow(() -> new NoSuchElementException("Invalid test id"));
+                            return attemptMapper.toResultDto(attempt, test);
+                        }
+                )
                 .collect(Collectors.toList());
     }
 
     public AttemptDto getAttempt(int attemptId) {
         Attempt attempt = attemptRepository.findById(attemptId)
                 .orElseThrow(() -> new NoSuchElementException("No such attempt"));
-        TestDto testDto = testMapper.toDto(attempt.getTest());
-        Map<Integer, Boolean> submittedAnswers = attempt.getSubmittedAnswers().entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getId(), Map.Entry::getValue));
+        User user = userRepository.findById(attempt.getUserId())
+                .orElseThrow(() -> new NoSuchElementException("Invalid user id"));
+        TestDto testDto = testService.getTest(attempt.getTestId());
+        Map<Integer, Boolean> submittedAnswers = submittedAnswerRepository.getAllByAttemptId(attemptId)
+                .stream()
+                .collect(Collectors.toMap(SubmittedAnswer::getAnswerId, SubmittedAnswer::isSubmittedValue));
         testDto.setQuestions(
                 testDto.getQuestions().stream()
                         .filter(questionDto -> submittedAnswers.containsKey(questionDto.getAnswers().get(0).getId()))
                         .collect(Collectors.toList()));
-        return new AttemptDto(attempt.getUser().getId(), attempt.getUser().getNickname(),
-                attempt.getScore(), attempt.getDateTime(), testDto, submittedAnswers);
+        return new AttemptDto(user.getId(), user.getNickname(), attempt.getScore(), attempt.getDateTime(),
+                testDto, submittedAnswers);
     }
 }

@@ -6,8 +6,7 @@ import ru.vsu.csf.skofenko.testapplication.entity.Test;
 
 public class AttemptMapper {
 
-    public AttemptResultDto toResultDto(Attempt attempt) {
-        Test test = attempt.getTest();
+    public AttemptResultDto toResultDto(Attempt attempt, Test test) {
         return new AttemptResultDto(attempt.getId(), test.getId(), test.getName(), attempt.getDateTime(),
                 attempt.getScore(), attempt.getScore() >= test.getPassingScore());
     }

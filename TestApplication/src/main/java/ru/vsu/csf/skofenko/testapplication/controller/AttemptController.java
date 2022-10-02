@@ -22,8 +22,8 @@ public class AttemptController {
 
     @PostMapping("attempt")
     @ResponseStatus(HttpStatus.CREATED)
-    public AttemptResultDto submitAttempt(@Param("nickname") String nickname, @RequestBody List<AnswerDto> answers) {
-        return attemptService.submitAttempt(answers, nickname);
+    public AttemptResultDto submitAttempt(@Param("userId") int userId, @RequestBody List<AnswerDto> answers) {
+        return attemptService.submitAttempt(answers, userId);
     }
 
     @GetMapping("attempt")
