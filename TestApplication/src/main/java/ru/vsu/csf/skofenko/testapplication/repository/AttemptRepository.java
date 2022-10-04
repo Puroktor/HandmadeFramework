@@ -1,11 +1,11 @@
 package ru.vsu.csf.skofenko.testapplication.repository;
 
-import org.postgresql.ds.PGConnectionPoolDataSource;
 import ru.vsu.csf.framework.di.Inject;
 import ru.vsu.csf.framework.di.Repository;
 import ru.vsu.csf.framework.persistence.CrudRepository;
 import ru.vsu.csf.skofenko.testapplication.entity.Attempt;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 public class AttemptRepository implements CrudRepository<Attempt, Integer> {
     @Inject
-    private PGConnectionPoolDataSource dataSource;
+    private DataSource dataSource;
 
     @Override
     public Attempt save(Attempt entity) {
@@ -75,6 +75,23 @@ public class AttemptRepository implements CrudRepository<Attempt, Integer> {
             return attempts;
         } catch (SQLException ex) {
             throw new IllegalStateException("Can't get attempts from db", ex);
+        }
+    }
+
+    @Override
+    public Attempt update(Attempt entity) {
+        String query = "UPDATE attempt SET user_id=?, test_id=?, date_time=?, score=? WHERE id = ?";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, entity.getUserId());
+            statement.setInt(2, entity.getTestId());
+            statement.setTimestamp(3, entity.getDateTime());
+            statement.setDouble(4, entity.getScore());
+            statement.setInt(5, entity.getId());
+            statement.execute();
+            return new Attempt(entity.getId(), entity.getUserId(), entity.getTestId(), entity.getScore(), entity.getDateTime());
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Can't update attempt in db", ex);
         }
     }
 

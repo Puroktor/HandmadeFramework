@@ -1,12 +1,12 @@
 package ru.vsu.csf.skofenko.testapplication.repository;
 
-import org.postgresql.ds.PGConnectionPoolDataSource;
 import ru.vsu.csf.framework.di.Inject;
 import ru.vsu.csf.framework.di.Repository;
 import ru.vsu.csf.framework.persistence.CrudRepository;
 import ru.vsu.csf.skofenko.testapplication.entity.Role;
 import ru.vsu.csf.skofenko.testapplication.entity.User;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.Optional;
 public class UserRepository implements CrudRepository<User, Integer> {
 
     @Inject
-    private PGConnectionPoolDataSource dataSource;
+    private DataSource dataSource;
 
     @Override
     public User save(User entity) {
@@ -83,6 +83,28 @@ public class UserRepository implements CrudRepository<User, Integer> {
             return users;
         } catch (SQLException ex) {
             throw new IllegalStateException("Can't get users from db", ex);
+        }
+    }
+
+    @Override
+    public User update(User entity) {
+        String query = "UPDATE system_user SET name = ?, nickname =?, password=?, email=?, university=?, role = ?, year = ?, group_number=? WHERE id = ?";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, entity.getName());
+            statement.setString(2, entity.getNickname());
+            statement.setString(3, entity.getPassword());
+            statement.setString(4, entity.getEmail());
+            statement.setString(5, entity.getUniversity());
+            statement.setInt(6, entity.getRole().ordinal());
+            statement.setObject(7, entity.getYear(), Types.INTEGER);
+            statement.setObject(8, entity.getGroupNumber(), Types.INTEGER);
+            statement.setInt(9, entity.getId());
+            statement.execute();
+            return new User(entity.getId(), entity.getName(), entity.getNickname(), entity.getPassword(), entity.getRole(),
+                    entity.getUniversity(), entity.getYear(), entity.getGroupNumber(), entity.getEmail());
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Can't update user in db", ex);
         }
     }
 

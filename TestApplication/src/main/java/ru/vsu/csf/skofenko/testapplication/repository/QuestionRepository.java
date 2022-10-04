@@ -1,11 +1,11 @@
 package ru.vsu.csf.skofenko.testapplication.repository;
 
-import org.postgresql.ds.PGConnectionPoolDataSource;
 import ru.vsu.csf.framework.di.Inject;
 import ru.vsu.csf.framework.di.Repository;
 import ru.vsu.csf.framework.persistence.CrudRepository;
 import ru.vsu.csf.skofenko.testapplication.entity.Question;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 public class QuestionRepository implements CrudRepository<Question, Integer> {
     @Inject
-    private PGConnectionPoolDataSource dataSource;
+    private DataSource dataSource;
 
     @Override
     public Question save(Question entity) {
@@ -77,6 +77,24 @@ public class QuestionRepository implements CrudRepository<Question, Integer> {
             return questions;
         } catch (SQLException ex) {
             throw new IllegalStateException("Can't get questions from db", ex);
+        }
+    }
+
+    @Override
+    public Question update(Question entity) {
+        String query = "UPDATE question SET test_id=?, text=?, max_score=?, question_template_index=? WHERE id = ?";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, entity.getTestId());
+            statement.setString(2, entity.getText());
+            statement.setInt(3, entity.getMaxScore());
+            statement.setInt(4, entity.getQuestionTemplateIndex());
+            statement.setInt(5, entity.getId());
+            statement.execute();
+            return new Question(entity.getId(), entity.getTestId(), entity.getText(), entity.getMaxScore(),
+                    entity.getQuestionTemplateIndex());
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Can't update question in db", ex);
         }
     }
 

@@ -78,8 +78,7 @@ public class AttemptService {
     }
 
     public List<AttemptResultDto> getAttemptsResults(int userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("Invalid user id"));
+        userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("Invalid user id"));
         List<Attempt> attempts = attemptRepository.findAllByUserIdOrderByDateTimeDesc(userId);
         return attempts.stream()
                 .map((attempt) -> {

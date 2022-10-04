@@ -1,12 +1,12 @@
 package ru.vsu.csf.skofenko.testapplication.repository;
 
-import org.postgresql.ds.PGConnectionPoolDataSource;
 import ru.vsu.csf.framework.di.Inject;
 import ru.vsu.csf.framework.di.Repository;
 import ru.vsu.csf.framework.persistence.CrudRepository;
 import ru.vsu.csf.skofenko.testapplication.entity.Test;
 import ru.vsu.csf.skofenko.testapplication.entity.TestType;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +15,12 @@ import java.util.Optional;
 @Repository
 public class TestRepository implements CrudRepository<Test, Integer> {
     @Inject
-    private PGConnectionPoolDataSource dataSource;
+    private DataSource dataSource;
 
     @Override
     public Test save(Test entity) {
         String query = "INSERT INTO test (name, programming_lang, questions_count, test_type, passing_score, id)" +
-                " VALUES (?,?,?,?,?,? default)";
+                " VALUES (?,?,?,?,?, default)";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(
                     entity.getId() == null ? query : query.replace("default", "?"),
@@ -79,6 +79,25 @@ public class TestRepository implements CrudRepository<Test, Integer> {
             return tests;
         } catch (SQLException ex) {
             throw new IllegalStateException("Can't get tests from db", ex);
+        }
+    }
+
+    @Override
+    public Test update(Test entity) {
+        String query = "UPDATE test SET name = ?, programming_lang = ?, questions_count = ?, test_type = ?, passing_score = ? WHERE id = ?";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, entity.getName());
+            statement.setString(2, entity.getProgrammingLang());
+            statement.setInt(3, entity.getQuestionsCount());
+            statement.setInt(4, entity.getTestType().ordinal());
+            statement.setInt(5, entity.getPassingScore());
+            statement.setInt(6, entity.getId());
+            statement.execute();
+            return new Test(entity.getId(), entity.getProgrammingLang(), entity.getName(), entity.getQuestionsCount(),
+                    entity.getPassingScore(), entity.getTestType());
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Can't update test in db", ex);
         }
     }
 

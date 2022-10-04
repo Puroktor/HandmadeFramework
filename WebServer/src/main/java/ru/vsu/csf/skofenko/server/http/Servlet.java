@@ -73,8 +73,10 @@ public class Servlet {
                     body = method.invoke(endpoint.instance(), params).toString().getBytes(StandardCharsets.UTF_8);
             case ("application/json") -> {
                 Object result = method.invoke(endpoint.instance(), params);
-                String str = mapper.writeValueAsString(result);
-                body = str.getBytes(StandardCharsets.UTF_8);
+                if (!method.getReturnType().equals(Void.TYPE)) {
+                    String str = mapper.writeValueAsString(result);
+                    body = str.getBytes(StandardCharsets.UTF_8);
+                }
             }
         }
         response.putHeader("Content-Type", contentType);

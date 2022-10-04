@@ -1,10 +1,10 @@
 package ru.vsu.csf.skofenko.testapplication.repository;
 
-import org.postgresql.ds.PGConnectionPoolDataSource;
 import ru.vsu.csf.framework.di.Inject;
 import ru.vsu.csf.framework.di.Repository;
 import ru.vsu.csf.skofenko.testapplication.entity.SubmittedAnswer;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,19 +12,18 @@ import java.util.List;
 @Repository
 public class SubmittedAnswerRepository {
     @Inject
-    private PGConnectionPoolDataSource dataSource;
+    private DataSource dataSource;
 
     public SubmittedAnswer save(SubmittedAnswer entity) {
         String query = "INSERT INTO submitted_answer (answer_id, attempt_id, submitted_value) VALUES (?,?,?)";
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = connection.prepareStatement(query);
             statement.setInt(1, entity.getAnswerId());
             statement.setInt(2, entity.getAttemptId());
             statement.setBoolean(3, entity.isSubmittedValue());
             statement.execute();
             try (ResultSet rs = statement.getGeneratedKeys()) {
                 if (rs.next()) {
-                    Integer id = rs.getInt(1);
                     return new SubmittedAnswer(entity.getAnswerId(), entity.getAttemptId(), entity.isSubmittedValue());
                 }
                 return null;

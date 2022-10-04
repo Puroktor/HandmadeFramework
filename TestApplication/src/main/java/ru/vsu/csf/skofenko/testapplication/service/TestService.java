@@ -106,8 +106,17 @@ public class TestService {
         validateTestDto(newTestDto).ifPresent(violations -> {
             throw new IllegalArgumentException(violations);
         });
-        testRepository.deleteById(id);
-        createTest(newTestDto);
+        newTestDto.setId(id);
+        Test test = testMapper.toEntity(newTestDto);
+        test = testRepository.update(test);
+        for (QuestionDto questionDto : newTestDto.getQuestions()) {
+            Question question = questionMapper.toEntity(questionDto, test.getId());
+            question = questionRepository.update(question);
+            for (AnswerDto answerDto : questionDto.getAnswers()) {
+                Answer answer = answerMapper.toEntity(answerDto, question.getId());
+                answerRepository.update(answer);
+            }
+        }
     }
 
     public void deleteTest(int id) {

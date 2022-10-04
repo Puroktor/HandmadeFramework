@@ -1,11 +1,11 @@
 package ru.vsu.csf.skofenko.testapplication.repository;
 
-import org.postgresql.ds.PGConnectionPoolDataSource;
 import ru.vsu.csf.framework.di.Inject;
 import ru.vsu.csf.framework.di.Repository;
 import ru.vsu.csf.framework.persistence.CrudRepository;
 import ru.vsu.csf.skofenko.testapplication.entity.Answer;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 public class AnswerRepository implements CrudRepository<Answer, Integer> {
     @Inject
-    private PGConnectionPoolDataSource dataSource;
+    private DataSource dataSource;
 
     @Override
     public Answer save(Answer entity) {
@@ -74,6 +74,22 @@ public class AnswerRepository implements CrudRepository<Answer, Integer> {
             return answers;
         } catch (SQLException ex) {
             throw new IllegalStateException("Can't get answers from db", ex);
+        }
+    }
+
+    @Override
+    public Answer update(Answer entity) {
+        String query = "UPDATE answer SET is_right=?, text=?, question_id=? WHERE id = ?";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setBoolean(1, entity.getIsRight());
+            statement.setString(2, entity.getText());
+            statement.setInt(3, entity.getQuestionId());
+            statement.setInt(4, entity.getId());
+            statement.execute();
+            return new Answer(entity.getId(), entity.getText(), entity.getIsRight(), entity.getQuestionId());
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Can't update answer in db", ex);
         }
     }
 
