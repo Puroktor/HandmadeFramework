@@ -11,6 +11,7 @@ import ru.vsu.csf.framework.http.mapping.PostMapping;
 import ru.vsu.csf.skofenko.testapplication.dto.AnswerDto;
 import ru.vsu.csf.skofenko.testapplication.dto.AttemptDto;
 import ru.vsu.csf.skofenko.testapplication.dto.AttemptResultDto;
+import ru.vsu.csf.skofenko.testapplication.dto.LeaderboardDto;
 import ru.vsu.csf.skofenko.testapplication.service.AttemptService;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class AttemptController {
 
     @PostMapping("attempt")
     @ResponseStatus(HttpStatus.CREATED)
-    public AttemptResultDto submitAttempt(@Param("userId") int userId, @RequestBody List<AnswerDto> answers) {
+    public AttemptResultDto submitAttempt(@Param("userId") int userId, @RequestBody AnswerDto[] answers) {
         return attemptService.submitAttempt(answers, userId);
     }
 
@@ -31,8 +32,13 @@ public class AttemptController {
         return attemptService.getAttempt(attemptId);
     }
 
-    @GetMapping("attempt-list")
+    @GetMapping("attempts")
     public List<AttemptResultDto> getAttemptsResults(@Param("userId") int userId) {
         return attemptService.getAttemptsResults(userId);
+    }
+
+    @GetMapping("leaderboard")
+    public LeaderboardDto getLeaderboard() {
+        return attemptService.getLeaderboard();
     }
 }

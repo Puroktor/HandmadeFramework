@@ -129,6 +129,24 @@ public class AttemptRepository implements CrudRepository<Attempt, Integer> {
         }
     }
 
+    public Optional<Attempt> findTopByUserAndTestOrderByDateTimeDesc(Integer userId, Integer testId) {
+        String query = "SELECT * FROM attempt WHERE user_id = ? AND test_id = ? ORDER BY date_time LIMIT 1";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, userId);
+            statement.setInt(2, testId);
+            try (ResultSet rs = statement.executeQuery()) {
+                Attempt attempt = null;
+                if (rs.next()) {
+                    attempt = getAttemptFromResultSet(rs);
+                }
+                return Optional.ofNullable(attempt);
+            }
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Can't get attempt from db", ex);
+        }
+    }
+
     private Attempt getAttemptFromResultSet(ResultSet rs) throws SQLException {
         return new Attempt(rs.getInt("id"), rs.getInt("user_id"),
                 rs.getInt("test_id"), rs.getDouble("score"),

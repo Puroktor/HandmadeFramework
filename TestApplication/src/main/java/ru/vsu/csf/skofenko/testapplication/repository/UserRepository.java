@@ -142,6 +142,23 @@ public class UserRepository implements CrudRepository<User, Integer> {
         }
     }
 
+    public List<User> findAllByRole(Role role) {
+        String query = "SELECT * FROM system_user WHERE role = ?";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, role.ordinal());
+            try (ResultSet rs = statement.executeQuery()) {
+                List<User> userList = new ArrayList<>();
+                while (rs.next()) {
+                    userList.add(getUserFromResultSet(rs));
+                }
+                return userList;
+            }
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Can't get user from db", ex);
+        }
+    }
+
     private User getUserFromResultSet(ResultSet rs) throws SQLException {
         return new User(rs.getInt("id"), rs.getString("name"), rs.getString("nickname"),
                 rs.getString("password"), Role.values()[rs.getInt("role")],

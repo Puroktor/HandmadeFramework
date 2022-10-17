@@ -2,19 +2,13 @@ package ru.vsu.csf.skofenko.testapplication.service;
 
 import ru.vsu.csf.framework.di.Inject;
 import ru.vsu.csf.framework.di.Service;
-import ru.vsu.csf.skofenko.testapplication.dto.AnswerDto;
-import ru.vsu.csf.skofenko.testapplication.dto.AttemptDto;
-import ru.vsu.csf.skofenko.testapplication.dto.AttemptResultDto;
-import ru.vsu.csf.skofenko.testapplication.dto.TestDto;
+import ru.vsu.csf.skofenko.testapplication.dto.*;
 import ru.vsu.csf.skofenko.testapplication.entity.*;
 import ru.vsu.csf.skofenko.testapplication.mapper.AttemptMapper;
 import ru.vsu.csf.skofenko.testapplication.repository.*;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,13 +30,12 @@ public class AttemptService {
     @Inject
     private TestService testService;
 
-    public AttemptResultDto submitAttempt(List<AnswerDto> answers, int userId) {
+    public AttemptResultDto submitAttempt(AnswerDto[] answers, int userId) {
         class Score {
             private int correct;
             private int all;
         }
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("Invalid user id"));
+        userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("Invalid user id"));
         HashMap<Question, Score> questionIdToScoreMap = new HashMap<>();
         Map<Answer, Boolean> submittedAnswers = new HashMap<>();
         for (AnswerDto submittedAnswer : answers) {
@@ -105,5 +98,33 @@ public class AttemptService {
                         .collect(Collectors.toList()));
         return new AttemptDto(user.getId(), user.getNickname(), attempt.getScore(), attempt.getDateTime(),
                 testDto, submittedAnswers);
+    }
+
+    public LeaderboardDto getLeaderboard() {
+        List<User> userList = userRepository.findAllByRole(Role.STUDENT);
+        if (userList.isEmpty()) {
+            return new LeaderboardDto(null, null);
+        }
+        Iterable<Test> testList = testRepository.findAll();
+        List<LeaderboardDto.UserRecord> userRecords = new ArrayList<>();
+        for (User user : userList) {
+            Map<Integer, Double> testIdToScoreMap = new HashMap<>();
+            Double total = 0d;
+            for (Test test : testList) {
+                Optional<Attempt> optionalAttempt =
+                        attemptRepository.findTopByUserAndTestOrderByDateTimeDesc(user.getId(), test.getId());
+                if (optionalAttempt.isPresent()) {
+                    Attempt attempt = optionalAttempt.get();
+                    total += attempt.getScore();
+                    testIdToScoreMap.put(attempt.getTestId(), attempt.getScore());
+                }
+            }
+            userRecords.add(new LeaderboardDto.UserRecord(user.getId(), user.getNickname(), total, testIdToScoreMap));
+        }
+        List<LeaderboardDto.TestRecord> testRecordList = new ArrayList<>();
+        for (Test test : testList) {
+            testRecordList.add(new LeaderboardDto.TestRecord(test.getId(), test.getName(), test.getPassingScore()));
+        }
+        return new LeaderboardDto(testRecordList, userRecords);
     }
 }

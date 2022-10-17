@@ -1,5 +1,6 @@
 # Project exclude paths
 /target/
+resources/*
 docker/*
 .idea
 *.iml

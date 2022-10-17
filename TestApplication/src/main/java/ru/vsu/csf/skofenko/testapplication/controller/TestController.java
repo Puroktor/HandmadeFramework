@@ -11,7 +11,10 @@ import ru.vsu.csf.framework.http.mapping.GetMapping;
 import ru.vsu.csf.framework.http.mapping.PostMapping;
 import ru.vsu.csf.framework.http.mapping.PutMapping;
 import ru.vsu.csf.skofenko.testapplication.dto.TestDto;
+import ru.vsu.csf.skofenko.testapplication.dto.TestInfoDto;
 import ru.vsu.csf.skofenko.testapplication.service.TestService;
+
+import java.util.List;
 
 @Controller("api")
 public class TestController {
@@ -27,6 +30,11 @@ public class TestController {
     @GetMapping("test")
     public TestDto getTest(@Param("id") int id) {
         return testService.getTest(id);
+    }
+
+    @GetMapping("test-list")
+    public List<TestInfoDto> getTestList(@Param("userId") int userId) {
+        return testService.getTestList(userId);
     }
 
     @GetMapping("shuffled-test")

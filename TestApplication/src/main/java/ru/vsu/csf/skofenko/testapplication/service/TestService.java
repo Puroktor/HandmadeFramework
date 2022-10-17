@@ -5,16 +5,12 @@ import ru.vsu.csf.framework.di.Service;
 import ru.vsu.csf.skofenko.testapplication.dto.AnswerDto;
 import ru.vsu.csf.skofenko.testapplication.dto.QuestionDto;
 import ru.vsu.csf.skofenko.testapplication.dto.TestDto;
-import ru.vsu.csf.skofenko.testapplication.entity.Answer;
-import ru.vsu.csf.skofenko.testapplication.entity.Question;
-import ru.vsu.csf.skofenko.testapplication.entity.Test;
-import ru.vsu.csf.skofenko.testapplication.entity.TestType;
+import ru.vsu.csf.skofenko.testapplication.dto.TestInfoDto;
+import ru.vsu.csf.skofenko.testapplication.entity.*;
 import ru.vsu.csf.skofenko.testapplication.mapper.AnswerMapper;
 import ru.vsu.csf.skofenko.testapplication.mapper.QuestionMapper;
 import ru.vsu.csf.skofenko.testapplication.mapper.TestMapper;
-import ru.vsu.csf.skofenko.testapplication.repository.AnswerRepository;
-import ru.vsu.csf.skofenko.testapplication.repository.QuestionRepository;
-import ru.vsu.csf.skofenko.testapplication.repository.TestRepository;
+import ru.vsu.csf.skofenko.testapplication.repository.*;
 
 import java.util.*;
 
@@ -26,6 +22,10 @@ public class TestService {
     private QuestionRepository questionRepository;
     @Inject
     private AnswerRepository answerRepository;
+    @Inject
+    private AttemptRepository attemptRepository;
+    @Inject
+    private UserRepository userRepository;
     @Inject
     private TestMapper testMapper;
     @Inject
@@ -100,6 +100,21 @@ public class TestService {
             testDto.setQuestions(questions);
         }
         return testDto;
+    }
+
+    public List<TestInfoDto> getTestList(int userId) {
+        userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User doesn't exist"));
+        List<Test> tests = testRepository.findAll();
+        List<TestInfoDto> list = new ArrayList<>();
+        Attempt defaultAttempt = new Attempt();
+        for (Test test : tests) {
+            Double userScore = attemptRepository.findTopByUserAndTestOrderByDateTimeDesc(userId, test.getId())
+                    .orElse(defaultAttempt).getScore();
+            TestInfoDto testInfoDto = new TestInfoDto(test.getId(), test.getProgrammingLang(), test.getName(),
+                    test.getPassingScore(), test.getPassingScore(), userScore);
+            list.add(testInfoDto);
+        }
+        return list;
     }
 
     public void updateTest(int id, TestDto newTestDto) {
@@ -187,5 +202,4 @@ public class TestService {
             }
         }
     }
-
 }
