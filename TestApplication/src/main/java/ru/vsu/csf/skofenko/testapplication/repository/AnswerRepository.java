@@ -78,22 +78,6 @@ public class AnswerRepository implements CrudRepository<Answer, Integer> {
     }
 
     @Override
-    public Answer update(Answer entity) {
-        String query = "UPDATE answer SET is_right=?, text=?, question_id=? WHERE id = ?";
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setBoolean(1, entity.getIsRight());
-            statement.setString(2, entity.getText());
-            statement.setInt(3, entity.getQuestionId());
-            statement.setInt(4, entity.getId());
-            statement.execute();
-            return new Answer(entity.getId(), entity.getText(), entity.getIsRight(), entity.getQuestionId());
-        } catch (SQLException ex) {
-            throw new IllegalStateException("Can't update answer in db", ex);
-        }
-    }
-
-    @Override
     public void delete(Answer entity) {
         deleteById(entity.getId());
     }

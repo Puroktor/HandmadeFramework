@@ -79,23 +79,6 @@ public class AttemptRepository implements CrudRepository<Attempt, Integer> {
     }
 
     @Override
-    public Attempt update(Attempt entity) {
-        String query = "UPDATE attempt SET user_id=?, test_id=?, date_time=?, score=? WHERE id = ?";
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setInt(1, entity.getUserId());
-            statement.setInt(2, entity.getTestId());
-            statement.setTimestamp(3, entity.getDateTime());
-            statement.setDouble(4, entity.getScore());
-            statement.setInt(5, entity.getId());
-            statement.execute();
-            return new Attempt(entity.getId(), entity.getUserId(), entity.getTestId(), entity.getScore(), entity.getDateTime());
-        } catch (SQLException ex) {
-            throw new IllegalStateException("Can't update attempt in db", ex);
-        }
-    }
-
-    @Override
     public void delete(Attempt entity) {
         deleteById(entity.getId());
     }

@@ -40,6 +40,10 @@ public class TestService {
         if (testDto.getId() != null) {
             throw new IllegalArgumentException("Test must not have id");
         }
+        return saveTest(testDto);
+    }
+
+    private TestDto saveTest(TestDto testDto) {
         Test test = testMapper.toEntity(testDto);
         test = testRepository.save(test);
         List<QuestionDto> questionDtoList = new ArrayList<>();
@@ -122,26 +126,13 @@ public class TestService {
             throw new IllegalArgumentException(violations);
         });
         newTestDto.setId(id);
-        Test test = testMapper.toEntity(newTestDto);
-        test = testRepository.update(test);
-        for (QuestionDto questionDto : newTestDto.getQuestions()) {
-            Question question = questionMapper.toEntity(questionDto, test.getId());
-            question = questionRepository.update(question);
-            for (AnswerDto answerDto : questionDto.getAnswers()) {
-                Answer answer = answerMapper.toEntity(answerDto, question.getId());
-                answerRepository.update(answer);
-            }
-        }
+
+        testRepository.deleteById(id);
+        saveTest(newTestDto);
     }
 
     public void deleteTest(int id) {
-        TestDto testDto = getTest(id);
-        for (QuestionDto questionDto : testDto.getQuestions()) {
-            for (AnswerDto answerDto : questionDto.getAnswers()) {
-                answerRepository.deleteById(answerDto.getId());
-            }
-            questionRepository.deleteById(questionDto.getId());
-        }
+        testRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Invalid test Id"));
         testRepository.deleteById(id);
     }
 

@@ -87,28 +87,6 @@ public class UserRepository implements CrudRepository<User, Integer> {
     }
 
     @Override
-    public User update(User entity) {
-        String query = "UPDATE system_user SET name = ?, nickname =?, password=?, email=?, university=?, role = ?, year = ?, group_number=? WHERE id = ?";
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, entity.getName());
-            statement.setString(2, entity.getNickname());
-            statement.setString(3, entity.getPassword());
-            statement.setString(4, entity.getEmail());
-            statement.setString(5, entity.getUniversity());
-            statement.setInt(6, entity.getRole().ordinal());
-            statement.setObject(7, entity.getYear(), Types.INTEGER);
-            statement.setObject(8, entity.getGroupNumber(), Types.INTEGER);
-            statement.setInt(9, entity.getId());
-            statement.execute();
-            return new User(entity.getId(), entity.getName(), entity.getNickname(), entity.getPassword(), entity.getRole(),
-                    entity.getUniversity(), entity.getYear(), entity.getGroupNumber(), entity.getEmail());
-        } catch (SQLException ex) {
-            throw new IllegalStateException("Can't update user in db", ex);
-        }
-    }
-
-    @Override
     public void delete(User entity) {
         deleteById(entity.getId());
     }

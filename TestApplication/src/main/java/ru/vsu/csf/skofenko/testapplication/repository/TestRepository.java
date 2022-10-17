@@ -83,25 +83,6 @@ public class TestRepository implements CrudRepository<Test, Integer> {
     }
 
     @Override
-    public Test update(Test entity) {
-        String query = "UPDATE test SET name = ?, programming_lang = ?, questions_count = ?, test_type = ?, passing_score = ? WHERE id = ?";
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, entity.getName());
-            statement.setString(2, entity.getProgrammingLang());
-            statement.setInt(3, entity.getQuestionsCount());
-            statement.setInt(4, entity.getTestType().ordinal());
-            statement.setInt(5, entity.getPassingScore());
-            statement.setInt(6, entity.getId());
-            statement.execute();
-            return new Test(entity.getId(), entity.getProgrammingLang(), entity.getName(), entity.getQuestionsCount(),
-                    entity.getPassingScore(), entity.getTestType());
-        } catch (SQLException ex) {
-            throw new IllegalStateException("Can't update test in db", ex);
-        }
-    }
-
-    @Override
     public void delete(Test entity) {
         deleteById(entity.getId());
     }
