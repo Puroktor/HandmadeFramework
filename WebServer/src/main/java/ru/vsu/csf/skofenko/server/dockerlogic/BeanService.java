@@ -6,6 +6,8 @@ import ru.vsu.csf.framework.http.mapping.DeleteMapping;
 import ru.vsu.csf.framework.http.mapping.GetMapping;
 import ru.vsu.csf.framework.http.mapping.PostMapping;
 import ru.vsu.csf.framework.http.mapping.PutMapping;
+import ru.vsu.csf.framework.persistence.BaseDataSource;
+import ru.vsu.csf.skofenko.server.persistance.EntityManagerImpl;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -32,13 +34,29 @@ class BeanService {
                 Object instance = initialise(clazz);
                 instanceSet.add(instance);
                 parseEndpoints(clazz, instance, endpointManager);
-            } else if (clazz.getAnnotation(Service.class) != null || clazz.getAnnotation(Repository.class) != null) {
+            } else if (clazz.getAnnotation(Service.class) != null) {
                 instanceSet.add(initialise(clazz));
             } else if (clazz.getAnnotation(Config.class) != null) {
                 createBeans(clazz, instanceSet);
             }
         }
         return instanceSet;
+    }
+
+    static void addImplementations(Set<Object> instances) {
+        BaseDataSource dataSource = null;
+        for (Object instance : instances) {
+            if (instance instanceof BaseDataSource) {
+                if (dataSource != null) {
+                    throw new IllegalStateException("Application has several data sources");
+                } else {
+                    dataSource = (BaseDataSource) instance;
+                }
+            }
+        }
+        if (dataSource != null) {
+            instances.add(new EntityManagerImpl(dataSource));
+        }
     }
 
     private static void createBeans(Class<?> clazz, Set<Object> instanceSet) {

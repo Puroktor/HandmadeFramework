@@ -25,6 +25,7 @@ public class ApplicationContext {
     public ApplicationContext(JarFile jar) {
         Collection<Class<?>> classes = getAllClasses(jar);
         Set<Object> instanceSet = BeanService.createInstances(classes, endpointManager);
+        BeanService.addImplementations(instanceSet);
         ResourceManagerImpl resourceManager = new ResourceManagerImpl(getResourceFile(jar).getPath() + "\\");
         instanceSet.add(resourceManager);
         for (Object object : instanceSet) {
