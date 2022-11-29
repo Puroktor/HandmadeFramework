@@ -1,5 +1,6 @@
 package ru.vsu.csf.skofenko.server.persistance;
 
+import ru.vsu.csf.framework.persistence.Column;
 import ru.vsu.csf.framework.persistence.Entity;
 import ru.vsu.csf.framework.persistence.Id;
 
@@ -7,11 +8,56 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 public class EntityMapper {
 
-    public static void setIdFromResult(Statement statement, Object entity) throws SQLException {
+    public static Map<String, Object> getIdFields(Class<?> entityClass, Object entity) {
+        return getFieldsByPredicate(entityClass, entity, field -> field.getAnnotation(Id.class) != null);
+    }
+
+    public static Map<String, Object> getAllFields(Object entity) {
+        return getFieldsByPredicate(entity.getClass(), entity, field -> true);
+    }
+
+    private static Map<String, Object> getFieldsByPredicate(Class<?> entityClass, Object entity, Predicate<Field> fieldPredicate) {
+        Map<String, Object> properties = new HashMap<>();
+        for (Field field : entityClass.getDeclaredFields()) {
+            if (fieldPredicate.test(field)) {
+                try {
+                    field.setAccessible(true);
+                    String fieldName = getColumnName(field);
+                    properties.put(fieldName, entity != null ? field.get(entity) : null);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException("Can't read field value", e);
+                }
+            }
+        }
+        return properties;
+    }
+
+    public static String getTableName(Class<?> entityClass) {
+        String annotationValue = entityClass.getAnnotation(Entity.class).value();
+        if (annotationValue.equals("")) {
+            return CaseFormatter.camelCaseToUnderscores(entityClass.getSimpleName());
+        } else {
+            return annotationValue;
+        }
+    }
+
+    public static String getColumnName(Field field) {
+        String fieldName = CaseFormatter.camelCaseToUnderscores(field.getName());
+        Column columnAnnotation = field.getAnnotation(Column.class);
+        if (columnAnnotation != null) {
+            fieldName = columnAnnotation.value();
+        }
+        return fieldName;
+    }
+
+    public static void parseEntity(Statement statement, Object entity) throws SQLException {
         try (ResultSet rs = statement.getGeneratedKeys()) {
             if (rs.next()) {
                 parseEntity(rs, entity);
@@ -49,20 +95,5 @@ public class EntityMapper {
                 field.set(entity, value);
             }
         }
-    }
-
-    public static List<String> getIdFieldNames(Class<?> entityClass) {
-        List<String> idFieldNames = new ArrayList<>();
-        boolean isEntityAnnotationAbsent = entityClass.getAnnotation(Entity.class) == null;
-        if (isEntityAnnotationAbsent) {
-            return idFieldNames;
-        }
-
-        for (Field field : entityClass.getDeclaredFields()) {
-            if (field.getAnnotation(Id.class) != null) {
-                idFieldNames.add(field.getName());
-            }
-        }
-        return idFieldNames;
     }
 }

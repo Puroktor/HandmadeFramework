@@ -1,54 +1,42 @@
 package ru.vsu.csf.skofenko.server.persistance;
 
-import ru.vsu.csf.framework.persistence.Entity;
-import ru.vsu.csf.framework.persistence.Id;
-
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 
 public class StatementCreator {
 
     public static PreparedStatement createInsertStatement(Connection connection, Object entity) throws SQLException {
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         Class<?> entityClass = entity.getClass();
-        sql.append(getTableName(entityClass));
+        sql.append(EntityMapper.getTableName(entityClass));
         sql.append(" (");
 
-        StringBuilder paramNames = new StringBuilder();
-        StringBuilder paramValues = new StringBuilder();
-        List<Object> properties = new ArrayList<>();
-        for (Field field : entityClass.getDeclaredFields()) {
-            String underscoreName = CaseFormatter.camelCaseToUnderscores(field.getName());
-            paramNames.append(underscoreName);
-            paramNames.append(",");
-            try {
-                field.setAccessible(true);
-                Object value = field.get(entity);
-                if (field.getAnnotation(Id.class) != null && value == null) {
-                    paramValues.append("default");
-                } else {
-                    paramValues.append("?");
-                    properties.add(value);
-
-                }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException("Can't read field value", e);
-            }
-            paramValues.append(",");
+        Map<String, Object> fields = EntityMapper.getAllFields(entity);
+        Map<String, Object> idFields = EntityMapper.getIdFields(entityClass, null);
+        Collection<Object> properties = new ArrayList<>();
+        for (String fieldName : fields.keySet()) {
+            sql.append(fieldName);
+            sql.append(',');
         }
-
-        paramNames.deleteCharAt(paramNames.length() - 1);
-        paramValues.deleteCharAt(paramValues.length() - 1);
-
-        sql.append(paramNames);
+        sql.deleteCharAt(sql.length() - 1);
         sql.append(") VALUES (");
-        sql.append(paramValues);
+        for (Map.Entry<String, Object> field : fields.entrySet()) {
+            if (idFields.containsKey(field.getKey()) && field.getValue() == null) {
+                sql.append("default");
+            } else {
+                sql.append("?");
+                properties.add(field.getValue());
+            }
+            sql.append(',');
+        }
+        sql.deleteCharAt(sql.length() - 1);
         sql.append(")");
 
         return createStatement(connection, sql.toString(), properties);
@@ -56,39 +44,44 @@ public class StatementCreator {
 
     public static PreparedStatement createSelectStatement(Connection connection, Class<?> entityClass, Map<String, Object> properties) throws SQLException {
         StringBuilder sql = new StringBuilder("SELECT * FROM ");
-        setWhereClause(entityClass, properties, sql);
+        sql.append(EntityMapper.getTableName(entityClass));
+        setWhereClause(properties.keySet(), sql);
+        return createStatement(connection, sql.toString(), properties.values());
+    }
+
+    public static PreparedStatement createUpdateStatement(Connection connection, Object entity) throws SQLException {
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        Class<?> entityClass = entity.getClass();
+        sql.append(EntityMapper.getTableName(entityClass));
+        Map<String, Object> properties = EntityMapper.getAllFields(entity);
+        sql.append(" SET ");
+        for (String property : properties.keySet()) {
+            sql.append(property);
+            sql.append("=?,");
+        }
+        sql.deleteCharAt(sql.length() - 1);
+        setWhereClause(EntityMapper.getIdFields(entityClass, null).keySet(), sql);
         return createStatement(connection, sql.toString(), properties.values());
     }
 
     public static PreparedStatement createDeleteStatement(Connection connection, Object entity) throws SQLException {
         Class<?> entityClass = entity.getClass();
-        Map<String, Object> properties = new HashMap<>();
-        for (Field field : entityClass.getDeclaredFields()) {
-            if (field.getAnnotation(Id.class) != null) {
-                try {
-                    field.setAccessible(true);
-                    properties.put(field.getName(), field.get(entity));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Can't read field value", e);
-                }
-            }
-        }
-        return createDeleteStatement(connection, entityClass, properties);
+        return createDeleteStatement(connection, entityClass, EntityMapper.getIdFields(entityClass, entity));
     }
 
     public static PreparedStatement createDeleteStatement(Connection connection, Class<?> entityClass, Map<String, Object> properties) throws SQLException {
         StringBuilder sql = new StringBuilder("DELETE FROM ");
-        setWhereClause(entityClass, properties, sql);
+        sql.append(EntityMapper.getTableName(entityClass));
+        setWhereClause(properties.keySet(), sql);
         return createStatement(connection, sql.toString(), properties.values());
     }
 
-    private static void setWhereClause(Class<?> entityClass, Map<String, Object> properties, StringBuilder sql) {
-        sql.append(getTableName(entityClass));
+    private static void setWhereClause(Collection<String> properties, StringBuilder sql) {
         if (properties.isEmpty()) {
             return;
         }
         sql.append(" WHERE ");
-        for (String property : properties.keySet()) {
+        for (String property : properties) {
             sql.append(CaseFormatter.camelCaseToUnderscores(property));
             sql.append("=?,");
         }
@@ -112,14 +105,5 @@ public class StatementCreator {
             }
         }
         return statement;
-    }
-
-    private static String getTableName(Class<?> entityClass) {
-        String annotationValue = entityClass.getAnnotation(Entity.class).value();
-        if (annotationValue.equals("")) {
-            return CaseFormatter.camelCaseToUnderscores(entityClass.getSimpleName());
-        } else {
-            return annotationValue;
-        }
     }
 }

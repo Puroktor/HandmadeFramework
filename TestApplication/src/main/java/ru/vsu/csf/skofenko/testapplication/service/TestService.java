@@ -56,8 +56,8 @@ public class TestService {
     public TestDto getTest(int id) {
         Test test = entityManager.find(Test.class, id).orElseThrow(() -> new NoSuchElementException("Invalid test Id"));
         List<QuestionDto> questionDtoList = new ArrayList<>();
-        for (Question question : entityManager.findAllByProperties(Question.class, Map.of("testId", test.getId()))) {
-            List<AnswerDto> answersDtoList = entityManager.findAllByProperties(Answer.class, Map.of("questionId", question.getId()))
+        for (Question question : entityManager.findAllByProperties(Question.class, Map.of("test_id", test.getId()))) {
+            List<AnswerDto> answersDtoList = entityManager.findAllByProperties(Answer.class, Map.of("question_id", question.getId()))
                     .stream()
                     .map((ans) -> answerMapper.toDto(ans))
                     .toList();

@@ -82,7 +82,7 @@ public class AttemptService {
         User user = entityManager.find(User.class, attempt.getUserId())
                 .orElseThrow(() -> new NoSuchElementException("Invalid user id"));
         TestDto testDto = testService.getTest(attempt.getTestId());
-        Map<Integer, Boolean> submittedAnswers = entityManager.findAllByProperties(SubmittedAnswer.class, Map.of("attemptId", attemptId))
+        Map<Integer, Boolean> submittedAnswers = entityManager.findAllByProperties(SubmittedAnswer.class, Map.of("attempt_id", attemptId))
                 .stream()
                 .collect(Collectors.toMap(SubmittedAnswer::getAnswerId, SubmittedAnswer::getSubmittedValue));
         testDto.setQuestions(

@@ -26,14 +26,14 @@ public class EntityManagerImpl implements EntityManager {
 
     @Override
     public void save(Object entity) {
-        List<String> idFieldNames = EntityMapper.getIdFieldNames(entity.getClass());
-        if (idFieldNames.isEmpty()) {
+        Map<String, Object> idFields = EntityMapper.getIdFields(entity.getClass(), null);
+        if (idFields.isEmpty()) {
             throw new IllegalArgumentException("Object is not a valid entity!");
         }
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement statement = StatementCreator.createInsertStatement(connection, entity);
             statement.execute();
-            EntityMapper.setIdFromResult(statement, entity);
+            EntityMapper.parseEntity(statement, entity);
         } catch (SQLException e) {
             throw new IllegalStateException("Can't save entity to db", e);
         }
@@ -41,12 +41,12 @@ public class EntityManagerImpl implements EntityManager {
 
     @Override
     public <T> Optional<T> find(Class<T> entityClass, Object primaryKey) {
-        List<String> idFieldNames = EntityMapper.getIdFieldNames(entityClass);
-        if (idFieldNames.size() != 1) {
+        Map<String, Object> idFields = EntityMapper.getIdFields(entityClass, null);
+        if (idFields.size() != 1) {
             throw new IllegalArgumentException("Object is not a valid entity!");
         }
         List<T> entities = findAllByProperties(entityClass, Map.of(
-                idFieldNames.get(0),
+                idFields.keySet().iterator().next(),
                 primaryKey
         ));
         return entities.isEmpty() ? Optional.empty() : Optional.of(entities.get(0));
@@ -59,8 +59,8 @@ public class EntityManagerImpl implements EntityManager {
 
     @Override
     public <T> List<T> findAllByProperties(Class<T> entityClass, Map<String, Object> properties) {
-        List<String> idFieldNames = EntityMapper.getIdFieldNames(entityClass);
-        if (idFieldNames.isEmpty()) {
+        Map<String, Object> idFields = EntityMapper.getIdFields(entityClass, null);
+        if (idFields.isEmpty()) {
             throw new IllegalArgumentException("Object is not a valid entity!");
         }
         try (Connection connection = dataSource.getConnection()) {
@@ -73,9 +73,24 @@ public class EntityManagerImpl implements EntityManager {
     }
 
     @Override
+    public void update(Object entity) {
+        Map<String, Object> idFields = EntityMapper.getIdFields(entity.getClass(), null);
+        if (idFields.isEmpty()) {
+            throw new IllegalArgumentException("Object is not a valid entity!");
+        }
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement statement = StatementCreator.createUpdateStatement(connection, entity);
+            statement.execute();
+            EntityMapper.parseEntity(statement, entity);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Can't update entity in db", e);
+        }
+    }
+
+    @Override
     public void remove(Object entity) {
-        List<String> idFieldNames = EntityMapper.getIdFieldNames(entity.getClass());
-        if (idFieldNames.isEmpty()) {
+        Map<String, Object> idFields = EntityMapper.getIdFields(entity.getClass(), null);
+        if (idFields.isEmpty()) {
             throw new IllegalArgumentException("Object is not a valid entity!");
         }
         try (Connection connection = dataSource.getConnection()) {
@@ -88,13 +103,13 @@ public class EntityManagerImpl implements EntityManager {
 
     @Override
     public void remove(Class<?> entityClass, Object primaryKey) {
-        List<String> idFieldNames = EntityMapper.getIdFieldNames(entityClass);
-        if (idFieldNames.size() != 1) {
+        Map<String, Object> idFields = EntityMapper.getIdFields(entityClass, null);
+        if (idFields.size() != 1) {
             throw new IllegalArgumentException("Object is not a valid entity!");
         }
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement statement = StatementCreator.createDeleteStatement(connection, entityClass, Map.of(
-                    idFieldNames.get(0),
+                    idFields.keySet().iterator().next(),
                     primaryKey
             ));
             statement.execute();

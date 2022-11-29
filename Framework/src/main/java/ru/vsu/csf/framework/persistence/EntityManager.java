@@ -13,6 +13,8 @@ public interface EntityManager {
 
     <T> List<T> findAllByProperties(Class<T> entityClass, Map<String, Object> properties);
 
+    void update(Object entity);
+
     void remove(Object entity);
 
     void remove(Class<?> entityClass, Object primaryKey);
