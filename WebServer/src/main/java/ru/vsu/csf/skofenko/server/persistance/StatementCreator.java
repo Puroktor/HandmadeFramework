@@ -60,8 +60,11 @@ public class StatementCreator {
             sql.append("=?,");
         }
         sql.deleteCharAt(sql.length() - 1);
-        setWhereClause(EntityMapper.getIdFields(entityClass, null).keySet(), sql);
-        return createStatement(connection, sql.toString(), properties.values());
+        Map<String, Object> idFields = EntityMapper.getIdFields(entityClass, entity);
+        setWhereClause(idFields.keySet(), sql);
+        Collection<Object> values = new ArrayList<>(properties.values());
+        values.addAll(idFields.values());
+        return createStatement(connection, sql.toString(), values);
     }
 
     public static PreparedStatement createDeleteStatement(Connection connection, Object entity) throws SQLException {
