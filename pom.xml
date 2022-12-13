@@ -7,7 +7,7 @@
 
     <modules>
         <module>WebServer</module>
-        <module>Framework</module>
+        <module>FrameworkApi</module>
         <module>TestApplication</module>
     </modules>
 

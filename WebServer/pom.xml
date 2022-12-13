@@ -21,7 +21,7 @@
         </dependency>
         <dependency>
             <groupId>ru.vsu.csf.skofenko</groupId>
-            <artifactId>Framework</artifactId>
+            <artifactId>FrameworkApi</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>

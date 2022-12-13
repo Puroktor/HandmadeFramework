@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-public class StatementCreator {
+public class StatementFactory {
 
     public static PreparedStatement createInsertStatement(Connection connection, Object entity) throws SQLException {
         StringBuilder sql = new StringBuilder("INSERT INTO ");

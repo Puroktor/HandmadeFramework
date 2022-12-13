@@ -31,7 +31,7 @@ public class EntityManagerImpl implements EntityManager {
             throw new IllegalArgumentException("Object is not a valid entity!");
         }
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = StatementCreator.createInsertStatement(connection, entity);
+            PreparedStatement statement = StatementFactory.createInsertStatement(connection, entity);
             statement.execute();
             EntityMapper.parseEntity(statement, entity);
         } catch (SQLException e) {
@@ -64,7 +64,7 @@ public class EntityManagerImpl implements EntityManager {
             throw new IllegalArgumentException("Object is not a valid entity!");
         }
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = StatementCreator.createSelectStatement(connection, entityClass, properties);
+            PreparedStatement statement = StatementFactory.createSelectStatement(connection, entityClass, properties);
             statement.execute();
             return EntityMapper.createEntitiesFromResult(statement, entityClass);
         } catch (SQLException e) {
@@ -79,7 +79,7 @@ public class EntityManagerImpl implements EntityManager {
             throw new IllegalArgumentException("Object is not a valid entity!");
         }
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = StatementCreator.createUpdateStatement(connection, entity);
+            PreparedStatement statement = StatementFactory.createUpdateStatement(connection, entity);
             statement.execute();
             EntityMapper.parseEntity(statement, entity);
         } catch (SQLException e) {
@@ -94,7 +94,7 @@ public class EntityManagerImpl implements EntityManager {
             throw new IllegalArgumentException("Object is not a valid entity!");
         }
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = StatementCreator.createDeleteStatement(connection, entity);
+            PreparedStatement statement = StatementFactory.createDeleteStatement(connection, entity);
             statement.execute();
         } catch (SQLException e) {
             throw new IllegalStateException("Can't delete entity in db", e);
@@ -108,7 +108,7 @@ public class EntityManagerImpl implements EntityManager {
             throw new IllegalArgumentException("Object is not a valid entity!");
         }
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = StatementCreator.createDeleteStatement(connection, entityClass, Map.of(
+            PreparedStatement statement = StatementFactory.createDeleteStatement(connection, entityClass, Map.of(
                     idFields.keySet().iterator().next(),
                     primaryKey
             ));
@@ -121,7 +121,7 @@ public class EntityManagerImpl implements EntityManager {
     @Override
     public <T> List<T> executeNativeQuery(String sqlString, Class<T> returnClass, List<Object> properties) {
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement statement = StatementCreator.createStatement(connection, sqlString, properties);
+            PreparedStatement statement = StatementFactory.createStatement(connection, sqlString, properties);
             statement.execute();
             return EntityMapper.createEntitiesFromResult(statement, returnClass);
         } catch (SQLException e) {
