@@ -1,4 +1,4 @@
-package ru.vsu.csf.skofenko.server.dockerlogic;
+package ru.vsu.csf.skofenko.server.dockerlogic.di;
 
 import ru.vsu.csf.skofenko.server.Application;
 
@@ -13,27 +13,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-public class ApplicationContext {
+public class ContextLoader {
 
-    private final EndpointManager endpointManager = new EndpointManager();
-
-    public ApplicationContext(JarFile jar) {
-        Collection<Class<?>> classes = getAllClasses(jar);
-        Set<Object> instanceSet = BeanService.createInstances(classes, endpointManager);
-        BeanService.addImplementations(instanceSet);
-        ResourceManagerImpl resourceManager = new ResourceManagerImpl(getResourceFile(jar).getPath() + "\\");
-        instanceSet.add(resourceManager);
-        for (Object object : instanceSet) {
-            BeanService.setFields(object, instanceSet);
-        }
-    }
-
-    private static Collection<Class<?>> getAllClasses(JarFile jar) {
+    public static Collection<Class<?>> getAllClasses(JarFile jar) {
         Collection<Class<?>> classes = new ArrayList<>();
         URLClassLoader loader;
         try {
@@ -75,7 +61,7 @@ public class ApplicationContext {
         return classes;
     }
 
-    private static File getResourceFile(JarFile jar) {
+    public static File getResourceFile(JarFile jar) {
         String jarName = Paths.get(jar.getName()).getFileName().toString();
         jarName = jarName.substring(0, jarName.length() - ".jar".length());
         return new File("resources/" + jarName);
@@ -88,9 +74,5 @@ public class ApplicationContext {
             destFile.mkdirs();
         }
         return destFile;
-    }
-
-    public EndpointManager getEndpointManager() {
-        return endpointManager;
     }
 }

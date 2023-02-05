@@ -2,7 +2,7 @@ package ru.vsu.csf.skofenko.server.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.vsu.csf.framework.http.*;
-import ru.vsu.csf.skofenko.server.dockerlogic.ApplicationContext;
+import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
 import ru.vsu.csf.skofenko.server.dockerlogic.Endpoint;
 import ru.vsu.csf.skofenko.server.http.request.HttpRequest;
 import ru.vsu.csf.skofenko.server.http.request.RequestType;
