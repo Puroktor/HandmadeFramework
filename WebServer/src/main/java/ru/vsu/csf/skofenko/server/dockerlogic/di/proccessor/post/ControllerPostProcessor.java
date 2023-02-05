@@ -6,7 +6,9 @@ import ru.vsu.csf.framework.http.mapping.GetMapping;
 import ru.vsu.csf.framework.http.mapping.PostMapping;
 import ru.vsu.csf.framework.http.mapping.PutMapping;
 import ru.vsu.csf.skofenko.server.dockerlogic.Endpoint;
+import ru.vsu.csf.skofenko.server.dockerlogic.EndpointManager;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
+import ru.vsu.csf.skofenko.server.http.request.RequestType;
 
 import java.lang.reflect.Method;
 
@@ -24,14 +26,15 @@ public class ControllerPostProcessor implements PostProcessor {
             PostMapping postMapping = method.getAnnotation(PostMapping.class);
             PutMapping putMapping = method.getAnnotation(PutMapping.class);
             DeleteMapping deleteMapping = method.getAnnotation(DeleteMapping.class);
+            EndpointManager manager = applicationContext.getEndpointManager();
             if (getMapping != null) {
-                applicationContext.getEndpointManager().putGetPoint("%s/%s".formatted(annotation.value(), getMapping.value()), new Endpoint(bean, method));
+                manager.putEndpoint(RequestType.GET, "%s/%s".formatted(annotation.value(), getMapping.value()), new Endpoint(bean, method));
             } else if (postMapping != null) {
-                applicationContext.getEndpointManager().putPostPoint("%s/%s".formatted(annotation.value(), postMapping.value()), new Endpoint(bean, method));
+                manager.putEndpoint(RequestType.POST, "%s/%s".formatted(annotation.value(), postMapping.value()), new Endpoint(bean, method));
             } else if (putMapping != null) {
-                applicationContext.getEndpointManager().putPutPoint("%s/%s".formatted(annotation.value(), putMapping.value()), new Endpoint(bean, method));
+                manager.putEndpoint(RequestType.PUT, "%s/%s".formatted(annotation.value(), putMapping.value()), new Endpoint(bean, method));
             } else if (deleteMapping != null) {
-                applicationContext.getEndpointManager().putDeletePoint("%s/%s".formatted(annotation.value(), deleteMapping.value()), new Endpoint(bean, method));
+                manager.putEndpoint(RequestType.DELETE, "%s/%s".formatted(annotation.value(), deleteMapping.value()), new Endpoint(bean, method));
             }
         }
         return bean;

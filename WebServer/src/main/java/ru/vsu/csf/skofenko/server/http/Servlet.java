@@ -85,19 +85,13 @@ public class Servlet {
 
     public void doResponse(HttpRequest request, HttpResponse response) throws IOException {
         RequestType type = request.getRequestType();
-        String mapping = parseMapping(request);
-        Optional<Endpoint> optionalEndpoint;
-        switch (type) {
-            case GET -> optionalEndpoint = applicationContext.getEndpointManager().fetchGetPoint(mapping);
-            case POST -> optionalEndpoint = applicationContext.getEndpointManager().fetchPostPoint(mapping);
-            case PUT -> optionalEndpoint = applicationContext.getEndpointManager().fetchPutPoint(mapping);
-            case DELETE -> optionalEndpoint = applicationContext.getEndpointManager().fetchDeletePoint(mapping);
-            default -> {
-                response.setStatus(HttpStatus.NOT_IMPLEMENTED);
-                response.send();
-                return;
-            }
+        if (type.equals(RequestType.OTHER)) {
+            response.setStatus(HttpStatus.NOT_IMPLEMENTED);
+            response.send();
+            return;
         }
+        String mapping = parseMapping(request);
+        Optional<Endpoint> optionalEndpoint = applicationContext.getEndpointManager().fetchEndpoint(type, mapping);
         Endpoint endpoint;
         if (optionalEndpoint.isPresent()) {
             endpoint = optionalEndpoint.get();
