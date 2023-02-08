@@ -1,5 +1,7 @@
 package ru.vsu.csf.skofenko.server.http.request;
 
+import ru.vsu.csf.framework.http.RequestType;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;

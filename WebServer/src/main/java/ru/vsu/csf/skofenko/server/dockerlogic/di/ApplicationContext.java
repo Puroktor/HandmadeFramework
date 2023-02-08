@@ -1,10 +1,12 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.di;
 
+import ru.vsu.csf.framework.frontend.FrontInterface;
 import ru.vsu.csf.skofenko.server.dockerlogic.EndpointManager;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.configuration.BeanConfiguration;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.configuration.WebBeanConfiguration;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.initialision.InitialisationProcessor;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.post.PostProcessor;
+import ru.vsu.csf.skofenko.server.dockerlogic.frontend.AngularInterface;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,12 +18,14 @@ public class ApplicationContext {
     private final JarFile jarFile;
     private final EndpointManager endpointManager;
     private final BeanConfiguration beanConfiguration;
+    private final FrontInterface frontInterface;
     private Collection<Object> beans;
 
     public ApplicationContext(JarFile jarFile) {
         this.jarFile = jarFile;
         endpointManager = new EndpointManager();
         beanConfiguration = new WebBeanConfiguration();
+        frontInterface = new AngularInterface(ContextLoader.getResourceFile(jarFile));
 
         Collection<Class<?>> classes = ContextLoader.getAllClasses(jarFile);
         beans = new ArrayList<>();
@@ -70,5 +74,9 @@ public class ApplicationContext {
 
     public JarFile getJarFile() {
         return jarFile;
+    }
+
+    public FrontInterface getFrontInterface() {
+        return frontInterface;
     }
 }

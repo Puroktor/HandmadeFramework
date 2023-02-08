@@ -11,6 +11,6 @@ public class ResourceManagerFactory implements StandardBeanFactory {
     @Override
     public Optional<?> createBean(ApplicationContext applicationContext) {
         File resourceFile = ContextLoader.getResourceFile(applicationContext.getJarFile());
-        return Optional.of(new ResourceManagerImpl(resourceFile.getPath() + "\\"));
+        return Optional.of(new ResourceManagerImpl(resourceFile.getAbsolutePath() + "\\"));
     }
 }

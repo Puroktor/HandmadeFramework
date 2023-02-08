@@ -1,0 +1,16 @@
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
+%1$s
+
+const routes: Routes = [
+    %2$s
+];
+
+@NgModule({
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule]
+})
+export class AppRoutingModule {
+}
+
+export const routingComponents = [%3$s]

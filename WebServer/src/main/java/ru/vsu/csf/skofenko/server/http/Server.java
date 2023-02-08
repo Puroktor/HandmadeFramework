@@ -3,7 +3,7 @@ package ru.vsu.csf.skofenko.server.http;
 import ru.vsu.csf.framework.http.HttpStatus;
 import ru.vsu.csf.skofenko.server.Application;
 import ru.vsu.csf.skofenko.server.http.request.HttpRequest;
-import ru.vsu.csf.skofenko.server.http.request.RequestType;
+import ru.vsu.csf.framework.http.RequestType;
 import ru.vsu.csf.skofenko.server.http.response.HttpResponse;
 
 import java.io.IOException;

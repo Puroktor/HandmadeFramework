@@ -2,7 +2,7 @@ package ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.initialision;
 
 import ru.vsu.csf.framework.di.Bean;
 import ru.vsu.csf.framework.di.Config;
-import ru.vsu.csf.skofenko.server.dockerlogic.di.BeanService;
+import ru.vsu.csf.skofenko.server.dockerlogic.di.BeanUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -16,14 +16,14 @@ public class ConfigProcessor implements InitialisationProcessor {
             return Collections.emptyList();
         }
         List<Object> beans = new ArrayList<>();
-        Object config = BeanService.initialise(clazz);
+        Object config = BeanUtils.initialise(clazz);
         beans.add(config);
         for (Method method : clazz.getDeclaredMethods()) {
             if (method.isAnnotationPresent(Bean.class)) {
                 if (method.getReturnType().equals(Void.TYPE)) {
                     throw new IllegalStateException("%s Bean method is void".formatted(method));
                 }
-                Object bean = BeanService.createBean(method, config);
+                Object bean = BeanUtils.createBean(method, config);
                 beans.add(bean);
             }
         }

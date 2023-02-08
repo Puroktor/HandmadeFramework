@@ -1,6 +1,6 @@
 package ru.vsu.csf.skofenko.server.dockerlogic;
 
-import ru.vsu.csf.skofenko.server.http.request.RequestType;
+import ru.vsu.csf.framework.http.RequestType;
 
 import java.util.HashMap;
 import java.util.Map;

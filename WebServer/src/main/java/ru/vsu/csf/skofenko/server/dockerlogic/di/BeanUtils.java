@@ -3,7 +3,7 @@ package ru.vsu.csf.skofenko.server.dockerlogic.di;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class BeanService {
+public class BeanUtils {
 
     public static Object initialise(Class<?> clazz) {
         try {

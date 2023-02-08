@@ -1,14 +1,17 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.post;
 
 import ru.vsu.csf.framework.di.Controller;
+import ru.vsu.csf.framework.frontend.FrontComponent;
+import ru.vsu.csf.framework.frontend.FrontEndpoint;
+import ru.vsu.csf.framework.http.RequestType;
 import ru.vsu.csf.framework.http.mapping.DeleteMapping;
 import ru.vsu.csf.framework.http.mapping.GetMapping;
 import ru.vsu.csf.framework.http.mapping.PostMapping;
 import ru.vsu.csf.framework.http.mapping.PutMapping;
 import ru.vsu.csf.skofenko.server.dockerlogic.Endpoint;
-import ru.vsu.csf.skofenko.server.dockerlogic.EndpointManager;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
-import ru.vsu.csf.skofenko.server.http.request.RequestType;
+import ru.vsu.csf.skofenko.server.dockerlogic.frontend.AngularComponent;
+import ru.vsu.csf.skofenko.server.dockerlogic.frontend.FrontEndpointFactory;
 
 import java.lang.reflect.Method;
 
@@ -21,21 +24,40 @@ public class ControllerPostProcessor implements PostProcessor {
         if (annotation == null) {
             return bean;
         }
+        FrontComponent component = null;
+        if (annotation.generateUI()) {
+            component = new AngularComponent(clazz.getSimpleName());
+        }
         for (Method method : clazz.getDeclaredMethods()) {
             GetMapping getMapping = method.getAnnotation(GetMapping.class);
             PostMapping postMapping = method.getAnnotation(PostMapping.class);
             PutMapping putMapping = method.getAnnotation(PutMapping.class);
             DeleteMapping deleteMapping = method.getAnnotation(DeleteMapping.class);
-            EndpointManager manager = applicationContext.getEndpointManager();
+            String mapping = null;
+            RequestType requestType = null;
             if (getMapping != null) {
-                manager.putEndpoint(RequestType.GET, "%s/%s".formatted(annotation.value(), getMapping.value()), new Endpoint(bean, method));
+                mapping = "%s/%s".formatted(annotation.value(), getMapping.value());
+                requestType = RequestType.GET;
             } else if (postMapping != null) {
-                manager.putEndpoint(RequestType.POST, "%s/%s".formatted(annotation.value(), postMapping.value()), new Endpoint(bean, method));
+                mapping = "%s/%s".formatted(annotation.value(), postMapping.value());
+                requestType = RequestType.POST;
             } else if (putMapping != null) {
-                manager.putEndpoint(RequestType.PUT, "%s/%s".formatted(annotation.value(), putMapping.value()), new Endpoint(bean, method));
+                mapping = "%s/%s".formatted(annotation.value(), putMapping.value());
+                requestType = RequestType.PUT;
             } else if (deleteMapping != null) {
-                manager.putEndpoint(RequestType.DELETE, "%s/%s".formatted(annotation.value(), deleteMapping.value()), new Endpoint(bean, method));
+                mapping = "%s/%s".formatted(annotation.value(), deleteMapping.value());
+                requestType = RequestType.DELETE;
             }
+            if (mapping != null) {
+                applicationContext.getEndpointManager().putEndpoint(requestType, mapping, new Endpoint(bean, method));
+                if (annotation.generateUI()) {
+                    FrontEndpoint frontEndpoint = FrontEndpointFactory.createEndpoint(mapping, requestType, method);
+                    component.addEndpoint(frontEndpoint);
+                }
+            }
+        }
+        if (annotation.generateUI()) {
+            applicationContext.getFrontInterface().addComponent(component);
         }
         return bean;
     }

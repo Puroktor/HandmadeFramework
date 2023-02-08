@@ -1,11 +1,11 @@
 package ru.vsu.csf.skofenko.server.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ru.vsu.csf.framework.frontend.FrontInterface;
 import ru.vsu.csf.framework.http.*;
-import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
 import ru.vsu.csf.skofenko.server.dockerlogic.Endpoint;
+import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
 import ru.vsu.csf.skofenko.server.http.request.HttpRequest;
-import ru.vsu.csf.skofenko.server.http.request.RequestType;
 import ru.vsu.csf.skofenko.server.http.response.HttpResponse;
 
 import java.io.IOException;
@@ -22,6 +22,14 @@ public class Servlet {
 
     public Servlet(JarFile jar) {
         this.applicationContext = new ApplicationContext(jar);
+        startFrontInterface();
+    }
+
+    private void startFrontInterface() {
+        FrontInterface frontInterface = applicationContext.getFrontInterface();
+        if (frontInterface.createProject()) {
+            //new Thread(frontInterface).start();
+        }
     }
 
     private String parseMapping(HttpRequest request) {
