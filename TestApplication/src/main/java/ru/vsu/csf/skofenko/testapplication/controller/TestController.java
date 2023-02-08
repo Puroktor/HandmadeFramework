@@ -16,7 +16,7 @@ import ru.vsu.csf.skofenko.testapplication.service.TestService;
 
 import java.util.List;
 
-@Controller(value = "api", generateUI = true)
+@Controller(value = "api", generateUI = true, uiName="Test")
 public class TestController {
     @Inject
     private TestService testService;

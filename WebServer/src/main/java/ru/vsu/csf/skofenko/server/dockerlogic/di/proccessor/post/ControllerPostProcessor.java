@@ -1,8 +1,8 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.post;
 
 import ru.vsu.csf.framework.di.Controller;
-import ru.vsu.csf.framework.frontend.FrontComponent;
-import ru.vsu.csf.framework.frontend.FrontEndpoint;
+import ru.vsu.csf.framework.frontend.UIComponent;
+import ru.vsu.csf.framework.frontend.UIEndpoint;
 import ru.vsu.csf.framework.http.RequestType;
 import ru.vsu.csf.framework.http.mapping.DeleteMapping;
 import ru.vsu.csf.framework.http.mapping.GetMapping;
@@ -11,7 +11,7 @@ import ru.vsu.csf.framework.http.mapping.PutMapping;
 import ru.vsu.csf.skofenko.server.dockerlogic.Endpoint;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
 import ru.vsu.csf.skofenko.server.dockerlogic.frontend.AngularComponent;
-import ru.vsu.csf.skofenko.server.dockerlogic.frontend.FrontEndpointFactory;
+import ru.vsu.csf.skofenko.server.dockerlogic.frontend.UIEndpointFactory;
 
 import java.lang.reflect.Method;
 
@@ -24,9 +24,9 @@ public class ControllerPostProcessor implements PostProcessor {
         if (annotation == null) {
             return bean;
         }
-        FrontComponent component = null;
+        UIComponent component = null;
         if (annotation.generateUI()) {
-            component = new AngularComponent(clazz.getSimpleName());
+            component = new AngularComponent(annotation.uiName().equals("") ? clazz.getSimpleName() : annotation.uiName());
         }
         for (Method method : clazz.getDeclaredMethods()) {
             GetMapping getMapping = method.getAnnotation(GetMapping.class);
@@ -51,13 +51,13 @@ public class ControllerPostProcessor implements PostProcessor {
             if (mapping != null) {
                 applicationContext.getEndpointManager().putEndpoint(requestType, mapping, new Endpoint(bean, method));
                 if (annotation.generateUI()) {
-                    FrontEndpoint frontEndpoint = FrontEndpointFactory.createEndpoint(mapping, requestType, method);
-                    component.addEndpoint(frontEndpoint);
+                    UIEndpoint uiEndpoint = UIEndpointFactory.createEndpoint(mapping, requestType, method);
+                    component.addEndpoint(uiEndpoint);
                 }
             }
         }
         if (annotation.generateUI()) {
-            applicationContext.getFrontInterface().addComponent(component);
+            applicationContext.getUI().addComponent(component);
         }
         return bean;
     }

@@ -1,7 +1,7 @@
 package ru.vsu.csf.skofenko.server.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.vsu.csf.framework.frontend.FrontInterface;
+import ru.vsu.csf.framework.frontend.UI;
 import ru.vsu.csf.framework.http.*;
 import ru.vsu.csf.skofenko.server.dockerlogic.Endpoint;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
@@ -22,13 +22,13 @@ public class Servlet {
 
     public Servlet(JarFile jar) {
         this.applicationContext = new ApplicationContext(jar);
-        startFrontInterface();
+        startUI();
     }
 
-    private void startFrontInterface() {
-        FrontInterface frontInterface = applicationContext.getFrontInterface();
-        if (frontInterface.createProject()) {
-            //new Thread(frontInterface).start();
+    private void startUI() {
+        UI ui = applicationContext.getUI();
+        if (ui.create()) {
+            // new Thread(ui).start();
         }
     }
 

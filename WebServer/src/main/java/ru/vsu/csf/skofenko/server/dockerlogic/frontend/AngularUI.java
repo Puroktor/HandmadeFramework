@@ -1,31 +1,31 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.frontend;
 
-import ru.vsu.csf.framework.frontend.FrontComponent;
-import ru.vsu.csf.framework.frontend.FrontInterface;
+import ru.vsu.csf.framework.frontend.UIComponent;
+import ru.vsu.csf.framework.frontend.UI;
 import ru.vsu.csf.skofenko.server.AppProperties;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AngularInterface implements FrontInterface {
+public class AngularUI implements UI {
 
     public static final String FRONTEND_DIR_NAME = "frontend";
     public static final String FRONTEND_LOGS_FILE = "frontend-log.txt";
-    private final List<FrontComponent> components = new ArrayList<>();
+    private final List<UIComponent> components = new ArrayList<>();
     private final File resourceFile;
 
-    public AngularInterface(File resourceFile) {
+    public AngularUI(File resourceFile) {
         this.resourceFile = resourceFile;
     }
 
     @Override
-    public boolean addComponent(FrontComponent frontComponent) {
-        return components.add(frontComponent);
+    public boolean addComponent(UIComponent uiComponent) {
+        return components.add(uiComponent);
     }
 
     @Override
-    public boolean createProject() {
+    public boolean create() {
         if (components.isEmpty()) {
             return false;
         }
@@ -36,11 +36,11 @@ public class AngularInterface implements FrontInterface {
                 return true;
             }
             projectDir.mkdir();
-            AngularProjectFactory.createBaseProject(projectDir);
-            for (FrontComponent component : components) {
-                AngularProjectFactory.createComponent(component, projectDir);
+            AngularProjectGenerator.createBaseProject(projectDir);
+            for (UIComponent component : components) {
+                AngularProjectGenerator.createComponent(component, projectDir);
             }
-            AngularProjectFactory.createRouting(components, projectDir);
+            AngularProjectGenerator.createRouting(components, projectDir);
             return true;
         } catch (Exception e) {
             throw new IllegalStateException("Couldn't create Angular project", e);

@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface Controller {
     String value() default "";
     boolean generateUI() default false;
+    String uiName() default "";
 }

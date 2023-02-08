@@ -2,11 +2,11 @@ package ru.vsu.csf.framework.frontend;
 
 import java.util.List;
 
-public interface FrontComponent {
+public interface UIComponent {
     String getName();
     String getFileName();
     String getScriptName();
-    boolean addEndpoint(FrontEndpoint frontEndpoint);
+    boolean addEndpoint(UIEndpoint uiEndpoint);
 
-    List<FrontEndpoint> getEndpoints();
+    List<UIEndpoint> getEndpoints();
 }

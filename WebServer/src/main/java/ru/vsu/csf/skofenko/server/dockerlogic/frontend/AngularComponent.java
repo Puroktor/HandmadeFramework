@@ -1,13 +1,13 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.frontend;
 
-import ru.vsu.csf.framework.frontend.FrontComponent;
-import ru.vsu.csf.framework.frontend.FrontEndpoint;
+import ru.vsu.csf.framework.frontend.UIComponent;
+import ru.vsu.csf.framework.frontend.UIEndpoint;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AngularComponent implements FrontComponent {
-    private final List<FrontEndpoint> frontEndpoints = new ArrayList<>();
+public class AngularComponent implements UIComponent {
+    private final List<UIEndpoint> uiEndpoint = new ArrayList<>();
     private final String name;
     private final String fileName;
     private final String scriptName;
@@ -34,12 +34,12 @@ public class AngularComponent implements FrontComponent {
     }
 
     @Override
-    public boolean addEndpoint(FrontEndpoint frontEndpoint) {
-        return frontEndpoints.add(frontEndpoint);
+    public boolean addEndpoint(UIEndpoint uiEndpoint) {
+        return this.uiEndpoint.add(uiEndpoint);
     }
 
     @Override
-    public List<FrontEndpoint> getEndpoints() {
-        return List.copyOf(frontEndpoints);
+    public List<UIEndpoint> getEndpoints() {
+        return List.copyOf(uiEndpoint);
     }
 }
