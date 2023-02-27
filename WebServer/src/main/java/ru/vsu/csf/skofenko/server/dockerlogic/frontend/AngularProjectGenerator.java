@@ -25,7 +25,7 @@ public class AngularProjectGenerator {
         AngularTemplateRenderer.renderComponentTS(componentTS, component);
 
         File componentHTML = new File(componentDir, "%s.component.html".formatted(component.getFileName()));
-        componentHTML.createNewFile();
+        AngularTemplateRenderer.renderComponentHTML(componentHTML, component);
     }
 
     public static void createRouting(List<UIComponent> components, File projectDir) throws Exception {

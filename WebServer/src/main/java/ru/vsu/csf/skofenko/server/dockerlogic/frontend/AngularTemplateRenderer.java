@@ -34,6 +34,12 @@ public class AngularTemplateRenderer {
         renderTemplate(destinationFile, routingModuleTemplate, variablesMap);
     }
 
+    public static void renderComponentHTML(File destinationFile, UIComponent uiComponent) throws Exception {
+        Template routingModuleTemplate = CONFIGURATION.getTemplate("component-html.ftl");
+        Map<String, Object> variablesMap = Map.of("component", uiComponent);
+        renderTemplate(destinationFile, routingModuleTemplate, variablesMap);
+    }
+
     public static void renderRoutingModule(File destinationFile, List<UIComponent> uiComponents) throws Exception {
         Template routingModuleTemplate = CONFIGURATION.getTemplate("routing-module.ftl");
         Map<String, Object> variablesMap = Map.of("components", uiComponents);

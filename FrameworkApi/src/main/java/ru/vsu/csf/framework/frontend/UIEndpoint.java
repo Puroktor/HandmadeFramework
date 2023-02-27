@@ -4,5 +4,10 @@ import ru.vsu.csf.framework.http.RequestType;
 
 import java.util.List;
 
-public record UIEndpoint(String mapping, RequestType requestType, List<UIRequestParam> requestParams, Class<?> response) {
+public record UIEndpoint(String name,
+                         String mapping,
+                         RequestType requestType,
+                         List<UIQueryParam> queryParams,
+                         UIRequestBody requestBody,
+                         Class<?> response) {
 }

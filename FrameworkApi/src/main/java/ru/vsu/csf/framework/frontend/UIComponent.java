@@ -7,6 +7,5 @@ public interface UIComponent {
     String getFileName();
     String getScriptName();
     boolean addEndpoint(UIEndpoint uiEndpoint);
-
     List<UIEndpoint> getEndpoints();
 }

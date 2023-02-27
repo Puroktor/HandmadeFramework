@@ -87,7 +87,6 @@ public class Servlet {
                 }
             }
         }
-        response.putHeader("Content-Type", contentType);
         response.setBody(body);
     }
 

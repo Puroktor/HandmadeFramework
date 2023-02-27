@@ -1,4 +1,47 @@
-/* You can add global styles to this file, and also import other style files */
+html, body {
+    height: 100%;
+}
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.long-field {
+    width: 100%;
+}
+
+.generated-forms-container {
+    width: 75%;
+    margin: auto;
+    padding: 20px 0;
+    display: block;
+}
+
+.float-right {
+    float: right;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.response {
+    padding: 10px;
+}
+
+.response[response-type="error"] {
+    background: rgba(255, 193, 7, 0.5);
+}
+
+.response[response-type="success"] {
+    background: rgba(105, 240, 174, 0.5);
+}
+
+.response-body {
+    white-space: pre-wrap;
+}
+
+.request-footer {
+    height: 48px;
+}
