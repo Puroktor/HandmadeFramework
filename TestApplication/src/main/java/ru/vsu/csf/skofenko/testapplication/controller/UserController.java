@@ -12,7 +12,7 @@ import ru.vsu.csf.skofenko.testapplication.dto.UserDto;
 import ru.vsu.csf.skofenko.testapplication.dto.UserRegistrationDto;
 import ru.vsu.csf.skofenko.testapplication.service.UserService;
 
-@Controller(value = "api", generateUI = true, uiName="User")
+@Controller(value = "api", generateUI = true)
 public class UserController {
     @Inject
     private UserService userService;

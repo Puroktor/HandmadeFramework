@@ -1,9 +1,0 @@
-{
-  "/api/*": {
-    "target": "http://localhost:8080/test-app",
-    "secure": false,
-    "headers": {
-      "Connection": "keep-alive"
-    }
-  }
-}

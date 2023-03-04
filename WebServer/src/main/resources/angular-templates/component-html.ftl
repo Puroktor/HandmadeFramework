@@ -16,9 +16,9 @@
             <h3 class="text-center">Query Params</h3>
         </#if>
         <#list endpoint.queryParams() as queryParam>
-        <#if queryParam.field().type().name() == "TEXT">
+        <#if queryParam.type().name() == "TEXT">
             <mat-form-field class="long-field">
-                <mat-label>${queryParam.field().name()}</mat-label>
+                <mat-label>${queryParam.displayName()}</mat-label>
                 <input class="query-param" matInput data-param-name="${queryParam.submitName()}">
             </mat-form-field>
         </#if>
@@ -30,8 +30,8 @@
             <#list endpoint.requestBody().fields() as requestField>
                 <#if requestField.type().name() == "TEXT">
                     <mat-form-field class="long-field">
-                        <mat-label>${requestField.name()}</mat-label>
-                        <input class="body-param" matInput name="${requestField.name()}">
+                        <mat-label>${requestField.displayName()}</mat-label>
+                        <input class="body-param" matInput name="${requestField.submitName()}">
                     </mat-form-field>
                 </#if>
             </#list>

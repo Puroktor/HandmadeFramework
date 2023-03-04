@@ -1,5 +1,6 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.di;
 
+import ru.vsu.csf.framework.di.ResourceManager;
 import ru.vsu.csf.framework.frontend.UI;
 import ru.vsu.csf.skofenko.server.dockerlogic.EndpointManager;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.configuration.BeanConfiguration;
@@ -8,16 +9,16 @@ import ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.initialision.Initial
 import ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.post.PostProcessor;
 import ru.vsu.csf.skofenko.server.dockerlogic.frontend.AngularUI;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.*;
 import java.util.jar.JarFile;
 
 public class ApplicationContext {
     private final JarFile jarFile;
     private final EndpointManager endpointManager;
     private final BeanConfiguration beanConfiguration;
+    private final Properties properties;
     private final UI ui;
     private Collection<Object> beans;
 
@@ -25,6 +26,7 @@ public class ApplicationContext {
         this.jarFile = jarFile;
         endpointManager = new EndpointManager();
         beanConfiguration = new WebBeanConfiguration();
+        properties = new Properties();
         ui = new AngularUI(ContextLoader.getResourceFile(jarFile));
 
         Collection<Class<?>> classes = ContextLoader.getAllClasses(jarFile);
@@ -43,6 +45,19 @@ public class ApplicationContext {
                 .forEach(beans::add);
 
         beans = beans.stream().map(this::runPostProcessors).toList();
+        loadProperties();
+    }
+
+    private void loadProperties() {
+        try {
+            String propertiesPath = getBean(ResourceManager.class).getPath("application.properties");
+            properties.load(new FileInputStream(propertiesPath));
+        } catch (IOException ignored) {
+        }
+    }
+
+    public String getProperty(String key) {
+        return properties.getProperty(key);
     }
 
     private <T> T runPostProcessors(T initialBean) {

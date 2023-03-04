@@ -14,7 +14,7 @@ public class AngularComponent implements UIComponent {
 
     public AngularComponent(String name) {
         this.name = name;
-        this.fileName = name.toLowerCase();
+        this.fileName = name.replaceAll("\\s", "").toLowerCase();
         this.scriptName = fileName.substring(0, 1).toUpperCase() + fileName.substring(1);
     }
 

@@ -44,11 +44,10 @@ public class HttpRequest {
     }
 
     public String getHeader(String key) {
-        return headers.get(key);
+        return headers.get(key.toLowerCase());
     }
 
     private void parseInput(String s) throws IOException {
-
         String[] lines = s.split("\n");
         String[] requestLine = lines[0].split(" ");
         try {

@@ -2,6 +2,7 @@ package ru.vsu.csf.skofenko.testapplication.controller;
 
 import ru.vsu.csf.framework.di.Controller;
 import ru.vsu.csf.framework.di.Inject;
+import ru.vsu.csf.framework.frontend.DisplayName;
 import ru.vsu.csf.framework.http.HttpStatus;
 import ru.vsu.csf.framework.http.Param;
 import ru.vsu.csf.framework.http.RequestBody;
@@ -16,7 +17,8 @@ import ru.vsu.csf.skofenko.testapplication.service.TestService;
 
 import java.util.List;
 
-@Controller(value = "api", generateUI = true, uiName="Test")
+@Controller(value = "api", generateUI = true)
+@DisplayName("Custom test name")
 public class TestController {
     @Inject
     private TestService testService;
@@ -43,7 +45,9 @@ public class TestController {
     }
 
     @PutMapping("test")
-    public void updateTest(@Param("id") int id, @RequestBody TestDto testDto) {
+    @DisplayName("Custom update test")
+    public void updateTest(@Param("id") @DisplayName("Custom test id") int id,
+                           @RequestBody @DisplayName("Custom test dto") TestDto testDto) {
         testService.updateTest(id, testDto);
     }
 

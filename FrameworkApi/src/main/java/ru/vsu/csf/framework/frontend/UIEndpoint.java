@@ -7,7 +7,6 @@ import java.util.List;
 public record UIEndpoint(String name,
                          String mapping,
                          RequestType requestType,
-                         List<UIQueryParam> queryParams,
-                         UIRequestBody requestBody,
-                         Class<?> response) {
+                         List<UIField> queryParams,
+                         UIRequestBody requestBody) {
 }

@@ -3,6 +3,7 @@ package ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.post;
 import ru.vsu.csf.framework.di.Controller;
 import ru.vsu.csf.framework.frontend.UIComponent;
 import ru.vsu.csf.framework.frontend.UIEndpoint;
+import ru.vsu.csf.framework.frontend.DisplayName;
 import ru.vsu.csf.framework.http.RequestType;
 import ru.vsu.csf.framework.http.mapping.DeleteMapping;
 import ru.vsu.csf.framework.http.mapping.GetMapping;
@@ -26,7 +27,8 @@ public class ControllerPostProcessor implements PostProcessor {
         }
         UIComponent component = null;
         if (annotation.generateUI()) {
-            component = new AngularComponent(annotation.uiName().equals("") ? clazz.getSimpleName() : annotation.uiName());
+            DisplayName controllerName = clazz.getDeclaredAnnotation(DisplayName.class);
+            component = new AngularComponent(controllerName != null ? controllerName.value() : clazz.getSimpleName());
         }
         for (Method method : clazz.getDeclaredMethods()) {
             GetMapping getMapping = method.getAnnotation(GetMapping.class);

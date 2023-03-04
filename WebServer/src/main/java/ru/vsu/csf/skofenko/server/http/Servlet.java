@@ -27,8 +27,11 @@ public class Servlet {
 
     private void startUI() {
         UI ui = applicationContext.getUI();
-        if (ui.create()) {
-            // new Thread(ui).start();
+        boolean overrideUI = "true".equals(applicationContext.getProperty("override-ui"));
+        if (ui.create(overrideUI)) {
+            if ("true".equals(applicationContext.getProperty("startup-ui"))){
+                new Thread(ui).start();
+            }
         }
     }
 
@@ -90,7 +93,7 @@ public class Servlet {
         response.setBody(body);
     }
 
-    public void doResponse(HttpRequest request, HttpResponse response) throws IOException {
+    public void doResponse(HttpRequest request, HttpResponse response) throws Exception {
         RequestType type = request.getRequestType();
         if (type.equals(RequestType.OTHER)) {
             response.setStatus(HttpStatus.NOT_IMPLEMENTED);
@@ -108,19 +111,14 @@ public class Servlet {
             return;
         }
         ObjectMapper mapper = new ObjectMapper();
-        Object[] params = parseParams(endpoint.method(), request, mapper);
         try {
+            Object[] params = parseParams(endpoint.method(), request, mapper);
             setResponse(response, endpoint, params, mapper);
         } catch (InvocationTargetException invException) {
-            try {
-                Exception cause = (Exception) invException.getCause();
-                endpoint = applicationContext.getEndpointManager().fetchExceptionPoint(cause.getClass())
-                        .orElseThrow(() -> invException);
-                setResponse(response, endpoint, new Object[]{cause}, mapper);
-            } catch (Exception e) {
-                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                e.printStackTrace();
-            }
+            Exception cause = (Exception) invException.getCause();
+            endpoint = applicationContext.getEndpointManager().fetchExceptionPoint(cause.getClass())
+                    .orElseThrow(() -> invException);
+            setResponse(response, endpoint, new Object[]{cause}, mapper);
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
             e.printStackTrace();

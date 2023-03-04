@@ -5,7 +5,7 @@ import ru.vsu.csf.framework.http.Param;
 import ru.vsu.csf.framework.http.RequestBody;
 import ru.vsu.csf.framework.http.RequestType;
 
-import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -13,34 +13,36 @@ import java.util.*;
 public class UIEndpointFactory {
 
     public static UIEndpoint createEndpoint(String mapping, RequestType requestType, Method method) {
-        List<UIQueryParam> queryParams = new ArrayList<>();
+        List<UIField> queryParams = new ArrayList<>();
         UIRequestBody requestBody = null;
-        Iterator<Parameter> parameterIterator = Arrays.stream(method.getParameters()).iterator();
-        for (Annotation[] annotations : method.getParameterAnnotations()) {
-            Parameter parameter = parameterIterator.next();
-            Optional<Param> optionalQueryParam = getAnnotation(annotations, Param.class);
-            Optional<RequestBody> optionalRequestBody = getAnnotation(annotations, RequestBody.class);
-            Optional<UIName> optionalNameParam = getAnnotation(annotations, UIName.class);
+        DisplayName nameAnnotation = method.getDeclaredAnnotation(DisplayName.class);
+        String methodName = nameAnnotation == null ? method.getName() : nameAnnotation.value();
+        for (Parameter parameter : method.getParameters()) {
+            Param paramAnnotation = parameter.getDeclaredAnnotation(Param.class);
+            RequestBody requestBodyAnnotation = parameter.getDeclaredAnnotation(RequestBody.class);
 
-            String paramName = optionalNameParam.isPresent() ? optionalNameParam.get().value() : parameter.getName();
-            if (optionalQueryParam.isPresent()) {
-                queryParams.add(new UIQueryParam(optionalQueryParam.get().value(), new UIField(paramName, UIField.Type.TEXT)));
-            } else if (optionalRequestBody.isPresent()) {
+            String paramName = getFieldName(parameter, parameter.getType(), parameter.getName());
+            if (paramAnnotation != null) {
+                queryParams.add(new UIField(paramName, paramAnnotation.value(), UIField.Type.TEXT));
+            } else if (requestBodyAnnotation != null) {
                 List<UIField> fields = Arrays.stream(parameter.getType().getDeclaredFields())
-                        .map(field -> new UIField(field.getName(), UIField.Type.TEXT))
+                        .map(field -> new UIField(getFieldName(field, field.getType(), field.getName()), field.getName(), UIField.Type.TEXT))
                         .toList();
                 requestBody = new UIRequestBody(paramName, fields);
             } else {
                 throw new IllegalStateException("Frontend param is neither query or request body parameter " + parameter);
             }
         }
-        return new UIEndpoint(method.getName(), mapping, requestType, queryParams, requestBody, method.getReturnType());
+        return new UIEndpoint(methodName, mapping, requestType, queryParams, requestBody);
     }
 
-    private static <T extends Annotation> Optional<T> getAnnotation(Annotation[] annotations, Class<T> annotationClass) {
-        return Arrays.stream(annotations)
-                .filter(annotation -> annotation.annotationType().equals(annotationClass))
-                .reduce((a, b) -> null)
-                .map(annotation -> (T) annotation);
+    private static String getFieldName(AnnotatedElement element, Class<?> type, String codeName) {
+        DisplayName nameAnnotation = element.getDeclaredAnnotation(DisplayName.class);
+        if (nameAnnotation == null) {
+            DisplayName classNameAnnotation = type.getDeclaredAnnotation(DisplayName.class);
+            return classNameAnnotation == null ? codeName : classNameAnnotation.value();
+        } else {
+            return nameAnnotation.value();
+        }
     }
 }
