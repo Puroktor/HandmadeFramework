@@ -1,5 +1,6 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.post;
 
+import org.apache.commons.lang3.StringUtils;
 import ru.vsu.csf.framework.di.Controller;
 import ru.vsu.csf.framework.frontend.UIComponent;
 import ru.vsu.csf.framework.frontend.UIEndpoint;
@@ -38,16 +39,16 @@ public class ControllerPostProcessor implements PostProcessor {
             String mapping = null;
             RequestType requestType = null;
             if (getMapping != null) {
-                mapping = "%s/%s".formatted(annotation.value(), getMapping.value());
+                mapping = createMapping(annotation.value(), getMapping.value());
                 requestType = RequestType.GET;
             } else if (postMapping != null) {
-                mapping = "%s/%s".formatted(annotation.value(), postMapping.value());
+                mapping = createMapping(annotation.value(), postMapping.value());
                 requestType = RequestType.POST;
             } else if (putMapping != null) {
-                mapping = "%s/%s".formatted(annotation.value(), putMapping.value());
+                mapping = createMapping(annotation.value(), putMapping.value());
                 requestType = RequestType.PUT;
             } else if (deleteMapping != null) {
-                mapping = "%s/%s".formatted(annotation.value(), deleteMapping.value());
+                mapping = createMapping(annotation.value(), deleteMapping.value());
                 requestType = RequestType.DELETE;
             }
             if (mapping != null) {
@@ -62,5 +63,9 @@ public class ControllerPostProcessor implements PostProcessor {
             applicationContext.getUI().addComponent(component);
         }
         return bean;
+    }
+
+    private String createMapping(String baseMapping, String endpointMapping) {
+        return StringUtils.isBlank(endpointMapping) ? baseMapping : "%s/%s".formatted(baseMapping, baseMapping);
     }
 }

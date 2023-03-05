@@ -45,3 +45,7 @@ body {
 .request-footer {
     height: 48px;
 }
+
+.checkbox {
+    margin-bottom: 22px;
+}

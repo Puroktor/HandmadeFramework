@@ -15,6 +15,7 @@ import java.util.List;
 public class TestDto {
 
     private Integer id;
+    private boolean lol;
 
     @DisplayName("Custom programming language")
     private String programmingLang;

@@ -15,14 +15,14 @@ export class AppService {
 
         let queryParams = new HttpParams()
         for (let queryParam of endpointContainer.querySelectorAll('.query-param')) {
-            let queryParamElement = queryParam as HTMLInputElement
-            queryParams = queryParams.set(queryParamElement.dataset['paramName']!, queryParamElement.value)
+            let nameAndValue = this.parseElementValue(queryParam)
+            queryParams = queryParams.set(nameAndValue.name, nameAndValue.value)
         }
 
         let requestBody: any = {};
         for (let bodyParam of endpointContainer.querySelectorAll('.body-param')) {
-            let bodyParamElement = bodyParam as HTMLInputElement
-            requestBody[bodyParamElement.name] = bodyParamElement.value
+            let nameAndValue = this.parseElementValue(bodyParam)
+            requestBody[nameAndValue.name] = nameAndValue.value
         }
 
         let responseContainer: HTMLElement = endpointContainer.querySelector('.response-container')!
@@ -38,6 +38,26 @@ export class AppService {
                 this.showResponse(responseContainer, err, err.error)
             }
         });
+    }
+
+    private parseElementValue(element: Element) {
+        let name: string, value: any
+        if (element.tagName == 'INPUT') {
+            let inputElement = element as HTMLInputElement
+            name = inputElement.name
+            if (inputElement.type == 'number') {
+                value = inputElement.valueAsNumber
+            } else {
+                value = inputElement.value
+            }
+        } else if (element.tagName == 'MAT-CHECKBOX') {
+            let inputElement = element.querySelector('input[type="checkbox"]') as HTMLInputElement
+            name = element.getAttribute('name')!
+            value = inputElement.checked
+        } else {
+            throw new Error('Trying to parse unknown element!\n' + JSON.stringify(element))
+        }
+        return {name: name, value: value}
     }
 
     private showResponse(responseContainer: HTMLElement, response: HttpResponseBase, body: any) {

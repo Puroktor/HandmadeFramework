@@ -1,5 +1,6 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.frontend;
 
+import org.apache.commons.lang3.ClassUtils;
 import ru.vsu.csf.framework.frontend.*;
 import ru.vsu.csf.framework.http.Param;
 import ru.vsu.csf.framework.http.RequestBody;
@@ -23,10 +24,12 @@ public class UIEndpointFactory {
 
             String paramName = getFieldName(parameter, parameter.getType(), parameter.getName());
             if (paramAnnotation != null) {
-                queryParams.add(new UIField(paramName, paramAnnotation.value(), UIField.Type.TEXT));
+                UIField uiField = new UIField(paramName, paramAnnotation.value(), getFieldUIType(parameter.getType()));
+                queryParams.add(uiField);
             } else if (requestBodyAnnotation != null) {
                 List<UIField> fields = Arrays.stream(parameter.getType().getDeclaredFields())
-                        .map(field -> new UIField(getFieldName(field, field.getType(), field.getName()), field.getName(), UIField.Type.TEXT))
+                        .map(field -> new UIField(getFieldName(field, field.getType(), field.getName()), field.getName(),
+                                getFieldUIType(field.getType())))
                         .toList();
                 requestBody = new UIRequestBody(paramName, fields);
             } else {
@@ -43,6 +46,17 @@ public class UIEndpointFactory {
             return classNameAnnotation == null ? codeName : classNameAnnotation.value();
         } else {
             return nameAnnotation.value();
+        }
+    }
+
+    private static UIField.Type getFieldUIType(Class<?> filedClass) {
+        filedClass = ClassUtils.primitiveToWrapper(filedClass);
+        if (Number.class.isAssignableFrom(filedClass)) {
+            return UIField.Type.NUMBER;
+        } else if (Boolean.class.isAssignableFrom(filedClass)) {
+            return UIField.Type.BOOL;
+        } else {
+            return UIField.Type.TEXT;
         }
     }
 }
