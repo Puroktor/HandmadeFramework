@@ -21,11 +21,11 @@ export class ${component.scriptName}Component implements OnInit, OnDestroy {
     <#list component.endpoints as endpoint>
         this.${endpoint.codeName()}Form = new FormGroup({
         <#list endpoint.queryParams() as queryParam>
-            "query-${queryParam.submitName()}" : new FormControl(null<#if queryParam.required>, Validators.required</#if>),
+            "query-${queryParam.getSubmitName()}" : new FormControl(null<#if queryParam.required>, Validators.required</#if>),
         </#list>
         <#if endpoint.requestBody()??>
         <#list endpoint.requestBody().fields() as bodyField>
-            "body-${bodyField.submitName()}" : new FormControl(null<#if bodyField.required>, Validators.required</#if>),
+            "body-${bodyField.getSubmitName()}" : new FormControl(null<#if bodyField.required>, Validators.required</#if>),
         </#list>
         </#if>
         });

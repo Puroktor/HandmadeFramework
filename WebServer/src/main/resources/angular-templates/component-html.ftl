@@ -1,13 +1,22 @@
 <#-- @ftlvariable name="component" type="ru.vsu.csf.framework.frontend.UIComponent" -->
 
 <#macro renderField uiField formName prefix>
-    <#if uiField.type().name() == "TEXT" || uiField.type().name() == "NUMBER">
+    <#if uiField.getFieldType().name() == "TEXT" || uiField.getFieldType().name() == "NUMBER">
         <mat-form-field class="long-field">
-            <mat-label>${uiField.displayName()}</mat-label>
-            <input matInput formControlName="${prefix}${uiField.submitName()}" <#if uiField.type().name() == "NUMBER">type="number"</#if>>
+            <mat-label>${uiField.getDisplayName()}</mat-label>
+            <input matInput formControlName="${prefix}${uiField.getSubmitName()}" <#if uiField.getFieldType().name() == "NUMBER">type="number"</#if>>
         </mat-form-field>
-    <#elseif uiField.type().name() == "BOOL">
-        <mat-checkbox class="checkbox" formControlName="${prefix}${uiField.submitName()}">${uiField.displayName()}</mat-checkbox>
+    <#elseif uiField.getFieldType().name() == "BOOL">
+        <mat-checkbox class="checkbox" formControlName="${prefix}${uiField.getSubmitName()}">${uiField.getDisplayName()}</mat-checkbox>
+    <#elseif uiField.getFieldType().name() == "ENUM">
+        <mat-form-field class="long-field">
+            <mat-label>${uiField.getDisplayName()}</mat-label>
+            <mat-select formControlName="${prefix}${uiField.getSubmitName()}">
+                <#list uiField.getSubmitToDisplayValues() as submitName, displayName>
+                <mat-option value="${submitName}">${displayName}</mat-option>
+                </#list>
+            </mat-select>
+        </mat-form-field>
     </#if>
 </#macro>
 

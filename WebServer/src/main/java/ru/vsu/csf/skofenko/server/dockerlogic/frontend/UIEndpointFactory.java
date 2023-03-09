@@ -2,9 +2,11 @@ package ru.vsu.csf.skofenko.server.dockerlogic.frontend;
 
 import org.apache.commons.lang3.ClassUtils;
 import ru.vsu.csf.framework.frontend.*;
+import ru.vsu.csf.framework.frontend.field.UIField;
 import ru.vsu.csf.framework.http.Param;
 import ru.vsu.csf.framework.http.RequestBody;
 import ru.vsu.csf.framework.http.RequestType;
+import ru.vsu.csf.skofenko.server.dockerlogic.frontend.field.AngularUIField;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
@@ -22,41 +24,19 @@ public class UIEndpointFactory {
             Param paramAnnotation = parameter.getDeclaredAnnotation(Param.class);
             RequestBody requestBodyAnnotation = parameter.getDeclaredAnnotation(RequestBody.class);
 
-            String paramName = getFieldName(parameter, parameter.getType(), parameter.getName());
             if (paramAnnotation != null) {
-                UIField uiField = new UIField(paramName, paramAnnotation.value(), getFieldUIType(parameter.getType()), true);
+                UIField uiField = UIFieldFactory.createUIField(parameter, parameter.getType(), paramAnnotation.value());
                 queryParams.add(uiField);
             } else if (requestBodyAnnotation != null) {
                 List<UIField> fields = Arrays.stream(parameter.getType().getDeclaredFields())
-                        .map(field -> new UIField(getFieldName(field, field.getType(), field.getName()), field.getName(),
-                                getFieldUIType(field.getType()), true))
+                        .map(field -> UIFieldFactory.createUIField(field, field.getType(), field.getName()))
                         .toList();
-                requestBody = new UIRequestBody(paramName, fields);
+                String bodyName = UIFieldFactory.getFieldDisplayName(parameter, parameter.getType(), parameter.getName());
+                requestBody = new UIRequestBody(bodyName, fields);
             } else {
                 throw new IllegalStateException("Frontend param is neither query or request body parameter " + parameter);
             }
         }
         return new UIEndpoint(method.getName(), methodDisplayName, mapping, requestType, queryParams, requestBody);
-    }
-
-    private static String getFieldName(AnnotatedElement element, Class<?> type, String codeName) {
-        DisplayName nameAnnotation = element.getDeclaredAnnotation(DisplayName.class);
-        if (nameAnnotation == null) {
-            DisplayName classNameAnnotation = type.getDeclaredAnnotation(DisplayName.class);
-            return classNameAnnotation == null ? codeName : classNameAnnotation.value();
-        } else {
-            return nameAnnotation.value();
-        }
-    }
-
-    private static UIField.Type getFieldUIType(Class<?> filedClass) {
-        filedClass = ClassUtils.primitiveToWrapper(filedClass);
-        if (Number.class.isAssignableFrom(filedClass)) {
-            return UIField.Type.NUMBER;
-        } else if (Boolean.class.isAssignableFrom(filedClass)) {
-            return UIField.Type.BOOL;
-        } else {
-            return UIField.Type.TEXT;
-        }
     }
 }

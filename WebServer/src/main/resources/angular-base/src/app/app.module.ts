@@ -10,6 +10,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSelectModule} from '@angular/material/select';
 import {NgxJsonViewerModule} from 'ngx-json-viewer';
 
 import {AppRoutingModule, routingComponents} from './app-routing.module';
@@ -39,6 +40,7 @@ import {HttpClientModule} from '@angular/common/http';
         MatFormFieldModule,
         MatExpansionModule,
         MatCheckboxModule,
+        MatSelectModule,
         NgxJsonViewerModule
     ],
     providers: [],
