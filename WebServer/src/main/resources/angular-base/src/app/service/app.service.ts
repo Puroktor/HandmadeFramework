@@ -11,18 +11,18 @@ export class AppService {
     }
 
     public submitForm(requestType: string, mapping: string, values: any): Observable<HttpResponse<any>> {
-        let queryParams = new HttpParams()
-        let requestBody: any = {}
+        let queryParams = new HttpParams();
+        let requestBody: any = {};
         for (const param of Object.entries(values)) {
-            let paramName = param[0].split('-')
+            let paramName = param[0].split('-');
             if (paramName[0] == 'query') {
-                queryParams = queryParams.set(paramName[1], param[1] as string)
+                queryParams = queryParams.set(paramName[1], param[1] as string);
             } else if (paramName[0] == 'body') {
-                requestBody[paramName[1]] = param[1]
+                requestBody[paramName[1]] = param[1];
             }
         }
         return this.http.request<HttpResponse<any>>(
             requestType, mapping, {params: queryParams, body: requestBody, observe: 'response'}
-        )
+        );
     }
 }

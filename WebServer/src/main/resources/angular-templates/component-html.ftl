@@ -1,6 +1,6 @@
 <#-- @ftlvariable name="component" type="ru.vsu.csf.framework.frontend.UIComponent" -->
 
-<#macro renderField uiField prefix>
+<#macro renderField uiField formName prefix>
     <#if uiField.type().name() == "TEXT" || uiField.type().name() == "NUMBER">
         <mat-form-field class="long-field">
             <mat-label>${uiField.displayName()}</mat-label>
@@ -29,19 +29,19 @@
                 <h3 class="text-center">Query Params</h3>
             </#if>
             <#list endpoint.queryParams() as queryParam>
-                <@renderField uiField=queryParam prefix="query-"/>
+                <@renderField uiField=queryParam formName="${endpoint.codeName()}Form" prefix="query-"/>
             </#list>
         </div>
         <div class="request-body">
             <#if endpoint.requestBody()??>
                 <h3 class="text-center">Request Body - ${endpoint.requestBody().entityName()}</h3>
                 <#list endpoint.requestBody().fields() as requestField>
-                   <@renderField uiField=requestField prefix="body-"/>
+                   <@renderField uiField=requestField formName="${endpoint.codeName()}Form" prefix="body-"/>
                 </#list>
             </#if>
         </div>
         <div class="request-footer">
-            <button mat-raised-button color="primary" type="submit" class="float-right">
+            <button mat-raised-button [disabled]="${endpoint.codeName()}Form.disabled" color="primary" type="submit" class="float-right">
                 <#if endpoint.requestType().name() == "POST">
                     Save
                 <#elseif endpoint.requestType().name() == "GET">

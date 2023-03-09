@@ -26,24 +26,8 @@ body {
     text-align: center;
 }
 
-.response {
-    padding: 10px;
-}
-
-.response[response-type="error"] {
-    background: rgba(255, 193, 7, 0.5);
-}
-
-.response[response-type="success"] {
-    background: rgba(105, 240, 174, 0.5);
-}
-
-.response-body {
-    white-space: pre-wrap;
-}
-
 .request-footer {
-    height: 48px;
+    height: 38px;
 }
 
 .checkbox {

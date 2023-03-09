@@ -12,10 +12,10 @@ import {AppService} from '../service/app.service';
 export class ${component.scriptName}Component implements OnInit, OnDestroy {
 
     <#list component.endpoints as endpoint>
-    ${endpoint.codeName()}Form: FormGroup
+    ${endpoint.codeName()}Form: FormGroup;
     </#list>
 
-    formToRequestDataMap: Map<FormGroup, any>
+    formToRequestDataMap: Map<FormGroup, any>;
 
     constructor(private appService: AppService) {
     <#list component.endpoints as endpoint>
@@ -28,13 +28,13 @@ export class ${component.scriptName}Component implements OnInit, OnDestroy {
             "body-${bodyField.submitName()}" : new FormControl(null<#if bodyField.required>, Validators.required</#if>),
         </#list>
         </#if>
-        })
+        });
     </#list>
         this.formToRequestDataMap = new Map<FormGroup, any>([
         <#list component.endpoints as endpoint>
             [this.${endpoint.codeName()}Form, {mapping: '${endpoint.mapping()}', requestType: '${endpoint.requestType().name()}', response: null}],
         </#list>
-        ])
+        ]);
     }
 
     ngOnInit(): void {
@@ -45,22 +45,25 @@ export class ${component.scriptName}Component implements OnInit, OnDestroy {
 
     <#list component.endpoints as endpoint>
     get ${endpoint.codeName()}FormControls(): any {
-        return this.${endpoint.codeName()}Form['controls']
+        return this.${endpoint.codeName()}Form['controls'];
     }
     </#list>
 
 
     submitForm(form: FormGroup): void {
         if (form.invalid) {
-            return
+            return;
         }
-        let requestData = this.formToRequestDataMap.get(form)
+        let requestData = this.formToRequestDataMap.get(form);
+        form.disable();
         this.appService.submitForm(requestData.requestType, requestData.mapping, form.value).subscribe({
             next: (response: HttpResponse<any>) => {
-                requestData.response = response
+                requestData.response = response;
+                form.enable();
             },
             error: (err: HttpErrorResponse) => {
-                requestData.response = err
+                requestData.response = err;
+                form.enable();
             }
         })
     }
