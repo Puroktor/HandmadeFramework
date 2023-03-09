@@ -66,6 +66,6 @@ public class ControllerPostProcessor implements PostProcessor {
     }
 
     private String createMapping(String baseMapping, String endpointMapping) {
-        return StringUtils.isBlank(endpointMapping) ? baseMapping : "%s/%s".formatted(baseMapping, baseMapping);
+        return StringUtils.isBlank(endpointMapping) ? baseMapping : "%s/%s".formatted(baseMapping, endpointMapping);
     }
 }

@@ -4,7 +4,8 @@ import ru.vsu.csf.framework.http.RequestType;
 
 import java.util.List;
 
-public record UIEndpoint(String name,
+public record UIEndpoint(String codeName,
+                         String displayName,
                          String mapping,
                          RequestType requestType,
                          List<UIField> queryParams,

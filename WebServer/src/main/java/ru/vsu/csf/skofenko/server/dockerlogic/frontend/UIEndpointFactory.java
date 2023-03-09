@@ -17,26 +17,26 @@ public class UIEndpointFactory {
         List<UIField> queryParams = new ArrayList<>();
         UIRequestBody requestBody = null;
         DisplayName nameAnnotation = method.getDeclaredAnnotation(DisplayName.class);
-        String methodName = nameAnnotation == null ? method.getName() : nameAnnotation.value();
+        String methodDisplayName = nameAnnotation == null ? method.getName() : nameAnnotation.value();
         for (Parameter parameter : method.getParameters()) {
             Param paramAnnotation = parameter.getDeclaredAnnotation(Param.class);
             RequestBody requestBodyAnnotation = parameter.getDeclaredAnnotation(RequestBody.class);
 
             String paramName = getFieldName(parameter, parameter.getType(), parameter.getName());
             if (paramAnnotation != null) {
-                UIField uiField = new UIField(paramName, paramAnnotation.value(), getFieldUIType(parameter.getType()));
+                UIField uiField = new UIField(paramName, paramAnnotation.value(), getFieldUIType(parameter.getType()), true);
                 queryParams.add(uiField);
             } else if (requestBodyAnnotation != null) {
                 List<UIField> fields = Arrays.stream(parameter.getType().getDeclaredFields())
                         .map(field -> new UIField(getFieldName(field, field.getType(), field.getName()), field.getName(),
-                                getFieldUIType(field.getType())))
+                                getFieldUIType(field.getType()), true))
                         .toList();
                 requestBody = new UIRequestBody(paramName, fields);
             } else {
                 throw new IllegalStateException("Frontend param is neither query or request body parameter " + parameter);
             }
         }
-        return new UIEndpoint(methodName, mapping, requestType, queryParams, requestBody);
+        return new UIEndpoint(method.getName(), methodDisplayName, mapping, requestType, queryParams, requestBody);
     }
 
     private static String getFieldName(AnnotatedElement element, Class<?> type, String codeName) {
