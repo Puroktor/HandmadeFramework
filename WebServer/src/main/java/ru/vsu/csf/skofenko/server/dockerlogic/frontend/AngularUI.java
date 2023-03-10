@@ -3,11 +3,11 @@ package ru.vsu.csf.skofenko.server.dockerlogic.frontend;
 import freemarker.template.TemplateException;
 import ru.vsu.csf.framework.frontend.UI;
 import ru.vsu.csf.framework.frontend.UIComponent;
+import ru.vsu.csf.framework.frontend.UIEndpoint;
 import ru.vsu.csf.skofenko.server.Application;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,11 +43,14 @@ public class AngularUI implements UI {
             AngularProjectGenerator.createBaseProject(projectDir);
             AngularProjectGenerator.createProxyConfig(getBaseUrl(), projectDir);
             for (UIComponent component : components) {
-                AngularProjectGenerator.createComponent(component, projectDir);
+                File componentDir = AngularProjectGenerator.createComponent(component, projectDir);
+                for (UIEndpoint endpoint : component.getEndpoints()) {
+                    AngularProjectGenerator.createEndpoint(endpoint, component, componentDir);
+                }
             }
             AngularProjectGenerator.createRouting(components, projectDir);
             return true;
-        } catch (IOException | TemplateException | URISyntaxException e) {
+        } catch (IOException | TemplateException e) {
             throw new IllegalStateException("Couldn't create Angular project", e);
         }
     }

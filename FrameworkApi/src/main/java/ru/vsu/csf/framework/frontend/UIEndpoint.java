@@ -5,10 +5,12 @@ import ru.vsu.csf.framework.http.RequestType;
 
 import java.util.List;
 
-public record UIEndpoint(String codeName,
-                         String displayName,
-                         String mapping,
-                         RequestType requestType,
-                         List<UIField> queryParams,
-                         UIRequestBody requestBody) {
+public interface UIEndpoint {
+    String getDisplayName();
+    String getFileName();
+    String getScriptName();
+    String getMapping();
+    RequestType getRequestType();
+    List<UIField> getQueryParams();
+    UIRequestBody getRequestBody();
 }

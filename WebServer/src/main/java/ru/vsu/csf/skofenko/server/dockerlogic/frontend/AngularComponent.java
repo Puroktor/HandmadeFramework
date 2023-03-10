@@ -10,13 +10,13 @@ import java.util.List;
 @Getter
 public class AngularComponent implements UIComponent {
     private final List<UIEndpoint> uiEndpoint = new ArrayList<>();
-    private final String name;
+    private final String displayName;
     private final String fileName;
     private final String scriptName;
 
-    public AngularComponent(String name) {
-        this.name = name;
-        this.fileName = name.replaceAll("\\s", "").toLowerCase();
+    public AngularComponent(String displayName) {
+        this.displayName = displayName;
+        this.fileName = displayName.replaceAll("\\s", "").toLowerCase();
         this.scriptName = fileName.substring(0, 1).toUpperCase() + fileName.substring(1);
     }
 

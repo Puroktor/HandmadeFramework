@@ -35,11 +35,11 @@ public class UIEndpointFactory {
                         .map(field -> UIFieldFactory.createUIField(field, field.getGenericType(), field.getName()))
                         .toList();
                 String bodyName = UIFieldFactory.getFieldDisplayName(parameter, parameter.getParameterizedType(), parameter.getName());
-                requestBody = new UIRequestBody(bodyName, fields);
+                requestBody = new AngularRequestBody(bodyName, fields);
             } else {
                 throw new IllegalStateException("Frontend param is neither query or request body parameter " + parameter);
             }
         }
-        return new UIEndpoint(method.getName(), methodDisplayName, mapping, requestType, queryParams, requestBody);
+        return new AngularEndpoint(methodDisplayName, mapping, requestType, queryParams, requestBody);
     }
 }

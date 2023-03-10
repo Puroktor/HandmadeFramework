@@ -2,13 +2,6 @@
     width: 100%;
 }
 
-.generated-forms-container {
-    width: 66.6%;
-    margin: auto;
-    padding: 20px 0;
-    display: block;
-}
-
 .float-right {
     float: right;
 }
@@ -41,6 +34,7 @@
     width: 100%;
 }
 
-.query-params {
-    margin-bottom: 18px;
+.array-container {
+    display: flex;
+    flex-direction: column;
 }

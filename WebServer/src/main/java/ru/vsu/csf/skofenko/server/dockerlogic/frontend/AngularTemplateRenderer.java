@@ -6,16 +6,28 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import lombok.experimental.UtilityClass;
-import ru.vsu.csf.framework.frontend.UIComponent;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 @UtilityClass
 public class AngularTemplateRenderer {
+    public enum TemplateFile {
+        PROXY_CONFIG("proxy-config-json.ftl"),
+        ROUTING_MODULE("routing-module.ftl"),
+        HEADER_HTML("header-html.ftl"),
+        COMPONENT_TS("component-ts.ftl"),
+        COMPONENT_HTML("component-html.ftl"),
+        ENDPOINT_HTML("endpoint-html.ftl"),
+        ENDPOINT_TS("endpoint-ts.ftl"),
+        APP_MODULE("app-module-ts.ftl");
+        private final String fileName;
+        TemplateFile(String fileName) {
+            this.fileName = fileName;
+        }
+    }
 
     private final Configuration CONFIGURATION = new Configuration(Configuration.VERSION_2_3_22);
 
@@ -26,43 +38,8 @@ public class AngularTemplateRenderer {
         CONFIGURATION.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
     }
 
-    public void renderHeaderHTML(File destinationFile, List<UIComponent> uiComponents) throws TemplateException, IOException {
-        Template routingModuleTemplate = CONFIGURATION.getTemplate("header-html.ftl");
-        Map<String, Object> variablesMap = Map.of("components", uiComponents);
-        renderTemplate(destinationFile, routingModuleTemplate, variablesMap);
-    }
-
-    public void renderComponentTS(File destinationFile, UIComponent uiComponent) throws TemplateException, IOException {
-        Template routingModuleTemplate = CONFIGURATION.getTemplate("component-ts.ftl");
-        Map<String, Object> variablesMap = Map.of("component", uiComponent);
-        renderTemplate(destinationFile, routingModuleTemplate, variablesMap);
-    }
-
-    public void renderComponentHTML(File destinationFile, UIComponent uiComponent) throws TemplateException, IOException {
-        Template routingModuleTemplate = CONFIGURATION.getTemplate("component-html.ftl");
-        Map<String, Object> variablesMap = Map.of("component", uiComponent);
-        renderTemplate(destinationFile, routingModuleTemplate, variablesMap);
-    }
-
-    public void renderComponentCSS(File destinationFile, UIComponent uiComponent) throws TemplateException, IOException {
-        Template routingModuleTemplate = CONFIGURATION.getTemplate("component-css.ftl");
-        Map<String, Object> variablesMap = Map.of("component", uiComponent);
-        renderTemplate(destinationFile, routingModuleTemplate, variablesMap);
-    }
-
-    public void renderRoutingModule(File destinationFile, List<UIComponent> uiComponents) throws TemplateException, IOException {
-        Template routingModuleTemplate = CONFIGURATION.getTemplate("routing-module.ftl");
-        Map<String, Object> variablesMap = Map.of("components", uiComponents);
-        renderTemplate(destinationFile, routingModuleTemplate, variablesMap);
-    }
-
-    public void renderProxyConfig(File destinationFile, String baseUrl) throws TemplateException, IOException {
-        Template proxyConfigTemplate = CONFIGURATION.getTemplate("proxy-config-json.ftl");
-        Map<String, Object> variablesMap = Map.of("baseUrl", baseUrl);
-        renderTemplate(destinationFile, proxyConfigTemplate, variablesMap);
-    }
-
-    private void renderTemplate(File destinationFile, Template template, Map<String, Object> variablesMap) throws TemplateException, IOException {
+    public void renderTemplate(File destinationFile, TemplateFile templateFile, Map<String, Object> variablesMap) throws TemplateException, IOException {
+        Template template = CONFIGURATION.getTemplate(templateFile.fileName);
         try (FileWriter fileWriter = new FileWriter(destinationFile)) {
             template.process(variablesMap, fileWriter);
         }

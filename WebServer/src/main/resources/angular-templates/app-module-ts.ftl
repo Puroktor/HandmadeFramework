@@ -1,3 +1,4 @@
+<#-- @ftlvariable name="components" type="java.util.List<ru.vsu.csf.framework.frontend.UIComponent>" -->
 import {NgModule} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
@@ -12,12 +13,18 @@ import {MatExpansionModule} from '@angular/material/expansion';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatSelectModule} from '@angular/material/select';
 import {NgxJsonViewerModule} from 'ngx-json-viewer';
+import {HttpClientModule} from '@angular/common/http';
 
 import {AppRoutingModule, routingComponents} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {HeaderComponent} from './header/header.component';
 import {ResponseComponent} from './response/response.component';
-import {HttpClientModule} from '@angular/common/http';
+
+<#list components as component>
+<#list component.getEndpoints() as endpoint>
+import {${endpoint.getScriptName()}Component} from './${component.getFileName()}/${endpoint.getFileName()}/${endpoint.getFileName()}.component';
+</#list>
+</#list>
 
 @NgModule({
     declarations: [
@@ -25,6 +32,12 @@ import {HttpClientModule} from '@angular/common/http';
         HeaderComponent,
         ResponseComponent,
         routingComponents,
+
+        <#list components as component>
+        <#list component.getEndpoints() as endpoint>
+        ${endpoint.getScriptName()}Component,
+        </#list>
+        </#list>
     ],
     imports: [
         BrowserModule,
@@ -41,7 +54,7 @@ import {HttpClientModule} from '@angular/common/http';
         MatExpansionModule,
         MatCheckboxModule,
         MatSelectModule,
-        NgxJsonViewerModule
+        NgxJsonViewerModule,
     ],
     providers: [],
     bootstrap: [AppComponent]

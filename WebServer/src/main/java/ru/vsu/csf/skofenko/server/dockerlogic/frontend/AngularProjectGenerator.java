@@ -4,45 +4,91 @@ import freemarker.template.TemplateException;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.io.FileUtils;
 import ru.vsu.csf.framework.frontend.UIComponent;
+import ru.vsu.csf.framework.frontend.UIEndpoint;
 import ru.vsu.csf.skofenko.server.Application;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
 @UtilityClass
 public class AngularProjectGenerator {
 
-    public void createBaseProject(File destinationProjectDir) throws IOException, URISyntaxException {
-        File baseAngularProject = new File(Application.class.getResource("/angular-base").toURI());
+    private final File baseAngularProject;
+    private final File cssComponentTemplate;
+    private final File cssEndpointTemplate;
+
+    static {
+        try {
+            baseAngularProject = new File(Application.class.getResource("/angular-base").toURI());
+            cssComponentTemplate = new File(Application.class.getResource("/angular-templates/css/component.css").toURI());
+            cssEndpointTemplate = new File(Application.class.getResource("/angular-templates/css/endpoint.css").toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void createBaseProject(File destinationProjectDir) throws IOException {
         FileUtils.copyDirectory(baseAngularProject, destinationProjectDir, false);
     }
 
-    public void createComponent(UIComponent component, File projectDir) throws TemplateException, IOException {
+    public File createComponent(UIComponent component, File projectDir) throws TemplateException, IOException {
         File componentDir = new File(projectDir, "src/app/%s".formatted(component.getFileName()));
         componentDir.mkdirs();
 
         File componentCSS = new File(componentDir, "%s.component.css".formatted(component.getFileName()));
-        AngularTemplateRenderer.renderComponentCSS(componentCSS, component);
+        FileUtils.copyFile(cssComponentTemplate,componentCSS);
 
         File componentTS = new File(componentDir, "%s.component.ts".formatted(component.getFileName()));
-        AngularTemplateRenderer.renderComponentTS(componentTS, component);
+        AngularTemplateRenderer.renderTemplate(componentTS,
+                AngularTemplateRenderer.TemplateFile.COMPONENT_TS, Map.of("component", component));
 
         File componentHTML = new File(componentDir, "%s.component.html".formatted(component.getFileName()));
-        AngularTemplateRenderer.renderComponentHTML(componentHTML, component);
+        AngularTemplateRenderer.renderTemplate(componentHTML,
+                AngularTemplateRenderer.TemplateFile.COMPONENT_HTML, Map.of("component", component));
+
+        return componentDir;
+    }
+
+    public void createEndpoint(UIEndpoint endpoint, UIComponent component, File componentDir) throws TemplateException, IOException {
+        File endpointDir = new File(componentDir, endpoint.getFileName());
+        endpointDir.mkdirs();
+
+        File endpointCSS = new File(endpointDir, "%s.component.css".formatted(endpoint.getFileName()));
+        FileUtils.copyFile(cssEndpointTemplate, endpointCSS);
+
+        File endpointTS = new File(endpointDir, "%s.component.ts".formatted(endpoint.getFileName()));
+        AngularTemplateRenderer.renderTemplate(endpointTS,
+                AngularTemplateRenderer.TemplateFile.ENDPOINT_TS,
+                Map.of("componentName", component.getFileName(), "endpoint", endpoint));
+
+        File endpointHTML = new File(endpointDir, "%s.component.html".formatted(endpoint.getFileName()));
+        AngularTemplateRenderer.renderTemplate(endpointHTML,
+                AngularTemplateRenderer.TemplateFile.ENDPOINT_HTML, Map.of("endpoint", endpoint));
     }
 
     public void createRouting(List<UIComponent> components, File projectDir) throws TemplateException, IOException {
         File routingModule = new File(projectDir, "src/app/app-routing.module.ts");
-        AngularTemplateRenderer.renderRoutingModule(routingModule, components);
+        AngularTemplateRenderer.renderTemplate(routingModule,
+                AngularTemplateRenderer.TemplateFile.ROUTING_MODULE, Map.of("components", components));
 
-        AngularTemplateRenderer.renderComponentTS(new File(projectDir, "src/app/header/header.component.ts"), new AngularComponent("header"));
-        AngularTemplateRenderer.renderHeaderHTML(new File(projectDir, "src/app/header/header.component.html"), components);
+        File headerTS = new File(projectDir, "src/app/header/header.component.ts");
+        AngularTemplateRenderer.renderTemplate(headerTS,
+                AngularTemplateRenderer.TemplateFile.COMPONENT_TS, Map.of("component", new AngularComponent("header")));
+
+        File headerHTML = new File(projectDir, "src/app/header/header.component.html");
+        AngularTemplateRenderer.renderTemplate(headerHTML,
+                AngularTemplateRenderer.TemplateFile.HEADER_HTML, Map.of("components", components));
+
+        File appModule = new File(projectDir, "src/app/app.module.ts");
+        AngularTemplateRenderer.renderTemplate(appModule,
+                AngularTemplateRenderer.TemplateFile.APP_MODULE, Map.of("components", components));
     }
 
     public void createProxyConfig(String baseUrl, File projectDir) throws TemplateException, IOException {
         File proxyConfig = new File(projectDir, "src/proxy.conf.json");
-        AngularTemplateRenderer.renderProxyConfig(proxyConfig, baseUrl);
+        AngularTemplateRenderer.renderTemplate(proxyConfig, AngularTemplateRenderer.TemplateFile.PROXY_CONFIG, Map.of("baseUrl", baseUrl));
     }
 }

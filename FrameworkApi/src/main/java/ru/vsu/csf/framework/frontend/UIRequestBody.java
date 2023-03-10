@@ -4,5 +4,7 @@ import ru.vsu.csf.framework.frontend.field.UIField;
 
 import java.util.List;
 
-public record UIRequestBody(String entityName, List<UIField> fields) {
+public interface UIRequestBody {
+    String getEntityName();
+    List<UIField> getFields();
 }
