@@ -17,15 +17,29 @@ export class ${component.scriptName}Component implements OnInit, OnDestroy {
 
     formToRequestDataMap: Map<FormGroup, any>;
 
+<#macro renderFormCotrol uiField prefix>
+    <#if uiField.getFieldType().name() == "CLASS">
+        <#list uiField.getInnerFields() as innerField>
+            <@renderFormCotrol uiField=innerField prefix="${prefix}${uiField.getSubmitName()}-"/>
+        </#list>
+    <#elseif uiField.getFieldType().name() == "LIST">
+    <#else>
+        "${prefix}${uiField.getSubmitName()}" : new FormControl(
+        <#if uiField.getFieldType().name() == "BOOL">false<#else>null</#if><#if uiField.isRequired()>,Validators.required</#if>
+        ),
+    </#if>
+
+</#macro>
+
     constructor(private appService: AppService) {
     <#list component.endpoints as endpoint>
         this.${endpoint.codeName()}Form = new FormGroup({
         <#list endpoint.queryParams() as queryParam>
-            "query-${queryParam.getSubmitName()}" : new FormControl(null<#if queryParam.required>, Validators.required</#if>),
+            <@renderFormCotrol uiField=queryParam prefix="query-"/>
         </#list>
         <#if endpoint.requestBody()??>
         <#list endpoint.requestBody().fields() as bodyField>
-            "body-${bodyField.getSubmitName()}" : new FormControl(null<#if bodyField.required>, Validators.required</#if>),
+            <@renderFormCotrol uiField=bodyField prefix="body-"/>
         </#list>
         </#if>
         });

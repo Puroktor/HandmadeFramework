@@ -9,7 +9,7 @@ import java.util.List;
 public class TestMapper {
 
     public TestDto toDto(Test test, List<QuestionDto> questionsDtoList) {
-        TestDto testDto = new TestDto(test.getId(), false, test.getProgrammingLang(), test.getName(), test.getQuestionsCount(),
+        TestDto testDto = new TestDto(test.getId(), test.getProgrammingLang(), test.getName(), test.getQuestionsCount(),
                 test.getPassingScore(), test.getTestType(), questionsDtoList);
         testDto.setQuestions(questionsDtoList);
         return testDto;

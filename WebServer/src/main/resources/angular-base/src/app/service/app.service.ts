@@ -18,11 +18,19 @@ export class AppService {
             if (paramName[0] == 'query') {
                 queryParams = queryParams.set(paramName[1], param[1] as string);
             } else if (paramName[0] == 'body') {
-                requestBody[paramName[1]] = param[1];
+                let element = requestBody
+                for (let i = 1; i < paramName.length - 1; i++) {
+                    if (!element[paramName[i]]) {
+                        element[paramName[i]] = {}
+                    }
+                    element = element[paramName[i]]
+                }
+                let innerFieldName = paramName[paramName.length - 1]
+                element[innerFieldName] = param[1];
             }
         }
         return this.http.request<HttpResponse<any>>(
-            requestType, mapping, {params: queryParams, body: requestBody, observe: 'response'}
+            requestType, mapping, {params: queryParams, body: JSON.stringify(requestBody), observe: 'response'}
         );
     }
 }

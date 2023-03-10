@@ -1,11 +1,13 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.frontend;
 
+import lombok.Getter;
 import ru.vsu.csf.framework.frontend.UIComponent;
 import ru.vsu.csf.framework.frontend.UIEndpoint;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class AngularComponent implements UIComponent {
     private final List<UIEndpoint> uiEndpoint = new ArrayList<>();
     private final String name;
@@ -16,21 +18,6 @@ public class AngularComponent implements UIComponent {
         this.name = name;
         this.fileName = name.replaceAll("\\s", "").toLowerCase();
         this.scriptName = fileName.substring(0, 1).toUpperCase() + fileName.substring(1);
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getFileName() {
-        return fileName;
-    }
-
-    @Override
-    public String getScriptName() {
-        return scriptName;
     }
 
     @Override

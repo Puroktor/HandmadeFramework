@@ -17,6 +17,16 @@
                 </#list>
             </mat-select>
         </mat-form-field>
+    <#elseif uiField.getFieldType().name() == "LIST">
+    <#elseif uiField.getFieldType().name() == "CLASS">
+        <div class="class-field-container">
+            <p class="label">${uiField.getDisplayName()}:</p>
+            <div class="class-container">
+                <#list uiField.getInnerFields() as innerField>
+                    <@renderField uiField=innerField formName="${formName}" prefix="${prefix}${uiField.getSubmitName()}-"/>
+                </#list>
+            </div>
+        </div>
     </#if>
 </#macro>
 

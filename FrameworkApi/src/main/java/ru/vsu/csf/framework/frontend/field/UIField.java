@@ -1,7 +1,6 @@
 package ru.vsu.csf.framework.frontend.field;
 
 public interface UIField {
-
     String getDisplayName();
 
     String getSubmitName();
@@ -14,6 +13,8 @@ public interface UIField {
         TEXT,
         NUMBER,
         BOOL,
-        ENUM
+        ENUM,
+        LIST,
+        CLASS
     }
 }
