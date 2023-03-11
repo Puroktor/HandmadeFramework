@@ -12,6 +12,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatSelectModule} from '@angular/material/select';
+import {MatIconModule} from '@angular/material/icon';
 import {NgxJsonViewerModule} from 'ngx-json-viewer';
 import {HttpClientModule} from '@angular/common/http';
 
@@ -54,6 +55,7 @@ import {${endpoint.getScriptName()}Component} from './${component.getFileName()}
         MatExpansionModule,
         MatCheckboxModule,
         MatSelectModule,
+        MatIconModule,
         NgxJsonViewerModule,
     ],
     providers: [],

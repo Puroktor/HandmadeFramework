@@ -19,13 +19,14 @@
     margin-bottom: 22px;
 }
 
-.class-field-container {
+.flex-container {
     display: flex;
 }
 
 .label {
     margin: 20px 10px !important;
     text-align: center;
+    width: 60px;
 }
 
 .class-container {
@@ -37,4 +38,25 @@
 .array-container {
     display: flex;
     flex-direction: column;
+    flex-grow: 3;
+    align-items: center;
+    padding: 4px;
+}
+
+.list-form-container {
+    display: flex;
+    width: 100%;
+    align-items: baseline;
+}
+
+.list-form-field {
+    width: 100%;
+}
+
+.remove-element-btn {
+    margin-left: 10px;
+}
+
+.add-element-btn {
+    margin-bottom: 10px;
 }

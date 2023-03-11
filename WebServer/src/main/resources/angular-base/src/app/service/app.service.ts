@@ -14,7 +14,7 @@ export class AppService {
         let queryParams = new HttpParams();
         let requestBody: any = {};
         for (const param of Object.entries(values)) {
-            let paramName = param[0].split('-');
+            let paramName = param[0].split('_');
             if (paramName[0] == 'query') {
                 queryParams = queryParams.set(paramName[1], param[1] as string);
             } else if (paramName[0] == 'body') {

@@ -15,39 +15,59 @@ export class ${endpoint.getScriptName()}Component implements OnInit, OnDestroy {
 <#macro renderFormCotrol uiField prefix>
     <#if uiField.getFieldType().name() == "CLASS">
         <#list uiField.getInnerFields() as innerField>
-            <@renderFormCotrol uiField=innerField prefix="${prefix}${uiField.getSubmitName()}-"/>
+            <@renderFormCotrol uiField=innerField prefix="${prefix}${uiField.getSubmitName()}_"/>
         </#list>
     <#elseif uiField.getFieldType().name() == "LIST">
-<#--        "${prefix}${uiField.getSubmitName()}" : new FormArray([]),-->
+        "${prefix}${uiField.getSubmitName()}" : new FormArray([]),
     <#else>
-        "${prefix}${uiField.getSubmitName()}" : new FormControl(
-        <#if uiField.getFieldType().name() == "BOOL">false<#else>null</#if><#if uiField.isRequired()>,Validators.required</#if>
-        ),
+        "${prefix}${uiField.getSubmitName()}" : new FormControl(<#if uiField.getFieldType().name() == "BOOL">false<#else>null</#if><#if uiField.isRequired()>,Validators.required</#if>),
+    </#if>
+</#macro>
+<#macro renderFormArray uiField prefix>
+    <#if uiField.getFieldType().name() == "LIST">
+    ${prefix}${uiField.getSubmitName()} = this.formGroup.get('${prefix}${uiField.getSubmitName()}') as FormArray;
     </#if>
 </#macro>
 
     private mapping: string = '${endpoint.getMapping()}';
     private requestType: string = '${endpoint.getRequestType().name()}';
-    formGroup: FormGroup;
     response: any|null = null;
 
-    constructor(private appService: AppService) {
-        this.formGroup = new FormGroup({
-        <#list endpoint.getQueryParams() as queryParam>
-            <@renderFormCotrol uiField=queryParam prefix="query-"/>
-        </#list>
-        <#if endpoint.getRequestBody()??>
+    formGroup = new FormGroup({
+    <#list endpoint.getQueryParams() as queryParam>
+        <@renderFormCotrol uiField=queryParam prefix="query_"/>
+    </#list>
+    <#if endpoint.getRequestBody()??>
         <#list endpoint.getRequestBody().getFields() as bodyField>
-            <@renderFormCotrol uiField=bodyField prefix="body-"/>
+            <@renderFormCotrol uiField=bodyField prefix="body_"/>
         </#list>
-        </#if>
-        });
+    </#if>
+    });
+
+<#list endpoint.getQueryParams() as queryParam>
+    <@renderFormArray uiField=queryParam prefix="query_"/>
+</#list>
+<#if endpoint.getRequestBody()??>
+    <#list endpoint.getRequestBody().getFields() as bodyField>
+    <@renderFormArray uiField=bodyField prefix="body_"/>
+    </#list>
+</#if>
+
+    constructor(private appService: AppService) {
     }
 
     ngOnInit(): void {
     }
 
     ngOnDestroy(): void {
+    }
+
+    addFormArrayItem(formArray: FormArray, isRequired: boolean) {
+        formArray.push(new FormControl(null, isRequired ? Validators.required : []));
+    }
+
+    removeFormArrayItem(formArray: FormArray, index: number) {
+        formArray.removeAt(index);
     }
 
     submitForm(): void {

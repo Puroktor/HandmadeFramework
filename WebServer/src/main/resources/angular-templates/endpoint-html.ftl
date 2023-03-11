@@ -18,23 +18,41 @@
     <#elseif uiField.getFieldType().name() == "BOOL">
         <mat-checkbox class="checkbox" formControlName="${prefix}${uiField.getSubmitName()}">${uiField.getDisplayName()}</mat-checkbox>
     <#elseif uiField.getFieldType().name() == "LIST">
-<#--        <div class="array-container" formArrayName="${prefix}${uiField.getSubmitName()}">-->
-<#--            <div class="form-group">-->
-<#--                <mat-form-field class="long-field">-->
-<#--                    <mat-label>Element {{i}}</mat-label>-->
-<#--                    <input matInput formControlName="${prefix}${uiField.getSubmitName()}{{i}}">-->
-<#--                </mat-form-field>-->
-<#--            </div>-->
-<#--            <button mat-fab color="primary">-->
-<#--                <mat-icon>delete</mat-icon>-->
-<#--            </button>-->
-<#--        </div>-->
+        <div class="flex-container">
+            <p class="label">${uiField.getDisplayName()}:</p>
+            <div class="array-container" formArrayName="${prefix}${uiField.getSubmitName()}">
+                <div class="list-form-container"
+                     *ngFor="let item of ${prefix}${uiField.getSubmitName()}.controls; index as i">
+                    <mat-form-field class="list-form-field">
+                        <mat-label>Element {{i+1}}</mat-label>
+                        <#if uiField.getFieldType().name() == "ENUM">
+                            <mat-select [formControlName]="i">
+                                <#list uiField.getSubmitToDisplayValues() as submitName, displayName>
+                                    <mat-option value="${submitName}">${displayName}</mat-option>
+                                </#list>
+                            </mat-select>
+                        <#else>
+                            <input matInput [formControlName]="i" <#if uiField.getFieldType().name() == "NUMBER">type="number"</#if>>
+                        </#if>
+                        <mat-error *ngIf="item.hasError('required')">
+                            Element {{i+1}} is required
+                        </mat-error>
+                    </mat-form-field>
+                    <button mat-mini-fab class="remove-element-btn" color="accent" type="button" (click)="removeFormArrayItem(${prefix}${uiField.getSubmitName()}, i)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </div>
+                <button mat-mini-fab color="primary" class="add-element-btn" type="button" (click)="addFormArrayItem(${prefix}${uiField.getSubmitName()}, ${uiField.isRequired()?string('true', 'false')})">
+                    <mat-icon>add</mat-icon>
+                </button>
+            </div>
+        </div>
     <#elseif uiField.getFieldType().name() == "CLASS">
-        <div class="class-field-container">
+        <div class="flex-container">
             <p class="label">${uiField.getDisplayName()}:</p>
             <div class="class-container">
                 <#list uiField.getInnerFields() as innerField>
-                    <@renderField uiField=innerField prefix="${prefix}${uiField.getSubmitName()}-"/>
+                    <@renderField uiField=innerField prefix="${prefix}${uiField.getSubmitName()}_"/>
                 </#list>
             </div>
         </div>
@@ -57,14 +75,14 @@
                 <h3 class="text-center">Query Params</h3>
             </#if>
             <#list endpoint.getQueryParams() as queryParam>
-                <@renderField uiField=queryParam prefix="query-"/>
+                <@renderField uiField=queryParam prefix="query_"/>
             </#list>
         </div>
         <div class="request-body">
             <#if endpoint.getRequestBody()??>
                 <h3 class="text-center">Request Body - ${endpoint.getRequestBody().getEntityName()}</h3>
                 <#list endpoint.getRequestBody().getFields() as requestField>
-                   <@renderField uiField=requestField prefix="body-"/>
+                   <@renderField uiField=requestField prefix="body_"/>
                 </#list>
             </#if>
         </div>
