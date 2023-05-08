@@ -29,7 +29,7 @@
         <dependency>
             <groupId>com.github.Puroktor.ui-generator</groupId>
             <artifactId>ui-generator-core</artifactId>
-            <version>78b01907</version>
+            <version>master-SNAPSHOT</version>
         </dependency>
 <!--        <dependency>-->
 <!--            <groupId>ru.vsu.csf.skofenko</groupId>-->

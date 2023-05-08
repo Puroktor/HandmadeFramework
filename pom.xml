@@ -9,7 +9,6 @@
         <module>WebServer</module>
         <module>FrameworkApi</module>
         <module>TestApplication</module>
-<!--        <module>ui-generator-core</module>-->
     </modules>
 
     <groupId>ru.vsu.csf.skofenko</groupId>
