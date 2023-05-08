@@ -1,12 +1,12 @@
 package ru.vsu.csf.skofenko.server.dockerlogic;
 
+import lombok.Getter;
 import ru.vsu.csf.framework.http.RequestType;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class EndpointManager {
+    @Getter
     private final Map<RequestType, Map<String, Endpoint>> endpointsMap = Map.of(
             RequestType.GET, new HashMap<>(),
             RequestType.POST, new HashMap<>(),

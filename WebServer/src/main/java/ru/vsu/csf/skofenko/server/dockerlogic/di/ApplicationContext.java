@@ -1,25 +1,26 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.di;
 
+import lombok.Getter;
 import ru.vsu.csf.framework.di.ResourceManager;
-import ru.vsu.csf.framework.frontend.UI;
 import ru.vsu.csf.skofenko.server.dockerlogic.EndpointManager;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.configuration.BeanConfiguration;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.configuration.WebBeanConfiguration;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.initialision.InitialisationProcessor;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.post.PostProcessor;
-import ru.vsu.csf.skofenko.server.dockerlogic.frontend.AngularUI;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarFile;
 
+@Getter
 public class ApplicationContext {
     private final JarFile jarFile;
     private final EndpointManager endpointManager;
     private final BeanConfiguration beanConfiguration;
+    private final Path resourcePath;
     private final Properties properties;
-    private final UI ui;
     private Collection<Object> beans;
 
     public ApplicationContext(JarFile jarFile) {
@@ -27,7 +28,7 @@ public class ApplicationContext {
         endpointManager = new EndpointManager();
         beanConfiguration = new WebBeanConfiguration();
         properties = new Properties();
-        ui = new AngularUI(ContextLoader.getResourceFile(jarFile));
+        resourcePath = ContextLoader.getResourceFile(jarFile).toPath();
 
         Collection<Class<?>> classes = ContextLoader.getAllClasses(jarFile);
         beans = new ArrayList<>();
@@ -76,22 +77,5 @@ public class ApplicationContext {
             throw new IllegalStateException("0 or > 1 bean(s) of class" + clazz);
         }
         return (T) suitableBeans.get(0);
-    }
-
-
-    public EndpointManager getEndpointManager() {
-        return endpointManager;
-    }
-
-    public Collection<Object> getBeans() {
-        return beans;
-    }
-
-    public JarFile getJarFile() {
-        return jarFile;
-    }
-
-    public UI getUI() {
-        return ui;
     }
 }

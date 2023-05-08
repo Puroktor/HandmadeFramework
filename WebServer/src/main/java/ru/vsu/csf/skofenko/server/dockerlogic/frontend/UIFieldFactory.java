@@ -4,11 +4,11 @@ import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.ClassUtils;
 import ru.vsu.csf.framework.frontend.DisplayName;
 import ru.vsu.csf.framework.frontend.Nullable;
-import ru.vsu.csf.framework.frontend.field.UIField;
-import ru.vsu.csf.skofenko.server.dockerlogic.frontend.field.AngularClassField;
-import ru.vsu.csf.skofenko.server.dockerlogic.frontend.field.AngularEnumField;
-import ru.vsu.csf.skofenko.server.dockerlogic.frontend.field.AngularListField;
-import ru.vsu.csf.skofenko.server.dockerlogic.frontend.field.AngularUIField;
+import ru.vsu.csf.skofenko.ui.generator.api.field.UIField;
+import ru.vsu.csf.skofenko.ui.generator.field.AngularClassField;
+import ru.vsu.csf.skofenko.ui.generator.field.AngularEnumField;
+import ru.vsu.csf.skofenko.ui.generator.field.AngularListField;
+import ru.vsu.csf.skofenko.ui.generator.field.AngularUIField;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -24,11 +24,14 @@ public class UIFieldFactory {
     public UIField createUIField(AnnotatedElement field, Type filedType, String submitName,
                                  Set<Class<?>> parsedClassesSet, boolean isParentRequired) {
         Class<?> filedClass = getClassFromType(filedType);
+        if (parsedClassesSet.contains(filedClass)) {
+            throw new IllegalArgumentException("Circular element link: " + filedClass);
+        }
         String displayName = getFieldDisplayName(field, filedClass, submitName);
-        boolean isRequired = isParentRequired && !field.isAnnotationPresent(Nullable.class);
+        boolean isRequired = isParentRequired && (field == null || !field.isAnnotationPresent(Nullable.class));
         if (Number.class.isAssignableFrom(filedClass)) {
             return new AngularUIField(displayName, submitName, UIField.FieldType.NUMBER, isRequired);
-        } else if (String.class.isAssignableFrom(filedClass) || parsedClassesSet.contains(filedClass)) {
+        } else if (String.class.isAssignableFrom(filedClass)) {
             return new AngularUIField(displayName, submitName, UIField.FieldType.TEXT, isRequired);
         } else if (filedClass.isEnum()) {
             Map<String, String> submitToDisplayValues = Arrays.stream(filedClass.getFields()).collect(
@@ -39,13 +42,13 @@ public class UIFieldFactory {
         } else if (Boolean.class.isAssignableFrom(filedClass)) {
             return new AngularUIField(displayName, submitName, UIField.FieldType.BOOL, isRequired);
         } else if (filedClass.isArray()) {
-            Class<?> elementClass = filedClass.arrayType();
-            UIField.FieldType elementType = getSimpleUIType(elementClass);
-            return new AngularListField(displayName, submitName, isRequired, elementType);
+            Class<?> elementClass = filedClass.getComponentType();
+            UIField element = createUIField(null, elementClass, elementClass.getSimpleName(), parsedClassesSet, isRequired);
+            return new AngularListField(displayName, submitName, isRequired, element);
         } else if (Iterable.class.isAssignableFrom(filedClass)) {
             Type genericType = ((ParameterizedType) filedType).getActualTypeArguments()[0];
-            UIField.FieldType elementType = getSimpleUIType((Class<?>) genericType);
-            return new AngularListField(displayName, submitName, isRequired, elementType);
+            UIField element = createUIField(null, genericType, genericType.getTypeName(), parsedClassesSet, isRequired);
+            return new AngularListField(displayName, submitName, isRequired, element);
         } else {
             List<Field> innerFields = getAllFields(filedClass);
             List<UIField> uiInnerFields = new ArrayList<>();
@@ -60,25 +63,12 @@ public class UIFieldFactory {
     }
 
     public String getFieldDisplayName(AnnotatedElement element, Type type, String submitName) {
-        DisplayName nameAnnotation = element.getDeclaredAnnotation(DisplayName.class);
+        DisplayName nameAnnotation = element != null ? element.getDeclaredAnnotation(DisplayName.class) : null;
         if (nameAnnotation == null) {
             DisplayName classNameAnnotation = ((Class<?>) type).getDeclaredAnnotation(DisplayName.class);
             return classNameAnnotation == null ? submitName : classNameAnnotation.value();
         } else {
             return nameAnnotation.value();
-        }
-    }
-
-    private UIField.FieldType getSimpleUIType(Class<?> elementClass) {
-        elementClass = ClassUtils.primitiveToWrapper(elementClass);
-        if (Number.class.isAssignableFrom(elementClass)) {
-            return UIField.FieldType.NUMBER;
-        } else if (elementClass.isEnum()) {
-            return UIField.FieldType.ENUM;
-        } else if (Boolean.class.isAssignableFrom(elementClass)) {
-            return UIField.FieldType.BOOL;
-        } else {
-            return UIField.FieldType.TEXT;
         }
     }
 

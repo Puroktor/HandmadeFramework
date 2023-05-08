@@ -2,12 +2,15 @@ package ru.vsu.csf.skofenko.server.dockerlogic.frontend;
 
 import lombok.experimental.UtilityClass;
 import ru.vsu.csf.framework.frontend.DisplayName;
-import ru.vsu.csf.framework.frontend.UIEndpoint;
-import ru.vsu.csf.framework.frontend.UIRequestBody;
-import ru.vsu.csf.framework.frontend.field.UIField;
+import ru.vsu.csf.skofenko.ui.generator.api.core.UIEndpoint;
+import ru.vsu.csf.skofenko.ui.generator.api.core.UIRequestBody;
+import ru.vsu.csf.skofenko.ui.generator.api.core.UIRequestType;
+import ru.vsu.csf.skofenko.ui.generator.api.field.UIField;
 import ru.vsu.csf.framework.http.Param;
 import ru.vsu.csf.framework.http.RequestBody;
 import ru.vsu.csf.framework.http.RequestType;
+import ru.vsu.csf.skofenko.ui.generator.core.AngularEndpoint;
+import ru.vsu.csf.skofenko.ui.generator.core.AngularRequestBody;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -40,6 +43,7 @@ public class UIEndpointFactory {
                 throw new IllegalStateException("Frontend param is neither query or request body parameter " + parameter);
             }
         }
-        return new AngularEndpoint(methodDisplayName, mapping, requestType, queryParams, requestBody);
+        UIRequestType uiRequestType = RequestTypeUtil.toUIType(requestType);
+        return new AngularEndpoint(methodDisplayName, mapping, uiRequestType, queryParams, requestBody);
     }
 }

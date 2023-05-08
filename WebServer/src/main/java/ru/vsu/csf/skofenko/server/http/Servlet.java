@@ -1,10 +1,13 @@
 package ru.vsu.csf.skofenko.server.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.vsu.csf.framework.frontend.UI;
+import ru.vsu.csf.skofenko.server.Application;
+import ru.vsu.csf.skofenko.ui.generator.api.core.UI;
 import ru.vsu.csf.framework.http.*;
 import ru.vsu.csf.skofenko.server.dockerlogic.Endpoint;
+import ru.vsu.csf.skofenko.server.dockerlogic.EndpointManager;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
+import ru.vsu.csf.skofenko.server.dockerlogic.frontend.UIFactory;
 import ru.vsu.csf.skofenko.server.http.request.HttpRequest;
 import ru.vsu.csf.skofenko.server.http.response.HttpResponse;
 
@@ -13,20 +16,27 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarFile;
 
 public class Servlet {
 
     private final ApplicationContext applicationContext;
+    private final String baseUrl;
 
     public Servlet(JarFile jar) {
         this.applicationContext = new ApplicationContext(jar);
+        this.baseUrl ="http://localhost:%d/%s".formatted(Application.PORT,
+                applicationContext.getResourcePath().getFileName());
         startUI();
     }
 
     private void startUI() {
-        UI ui = applicationContext.getUI();
+        Path resourcePath = applicationContext.getResourcePath();
+        EndpointManager endpointManager = applicationContext.getEndpointManager();
+        UI ui = UIFactory.createAngularUI(baseUrl, resourcePath, endpointManager);
+
         boolean overrideUI = "true".equals(applicationContext.getProperty("override-ui"));
         if (ui.create(overrideUI)) {
             if ("true".equals(applicationContext.getProperty("startup-ui"))){
