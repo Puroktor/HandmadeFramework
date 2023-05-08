@@ -8,6 +8,7 @@ import ru.vsu.csf.framework.frontend.DisplayName;
 import ru.vsu.csf.framework.frontend.Nullable;
 import ru.vsu.csf.framework.http.Param;
 import ru.vsu.csf.framework.http.RequestBody;
+import ru.vsu.csf.framework.http.mapping.DeleteMapping;
 import ru.vsu.csf.framework.http.mapping.PostMapping;
 
 import java.util.List;
@@ -23,14 +24,12 @@ public class UIController {
     public static class Dto {
         @DisplayName("Custom number field description")
         private int number;
-        private String text;
         @Nullable
         private String nullableText;
         @DisplayName("Custom boolean field description")
         private Boolean bool;
         @DisplayName("Custom enum field description")
         private Enum enumField;
-        private String[] arrayFiled;
         private List<Enum> listField;
         private InnerDto innerDto;
     }
@@ -64,5 +63,8 @@ public class UIController {
     @PostMapping("test")
     public Dto postTest(@Param("id") @DisplayName("custom id query param") int id, @RequestBody Dto dto) {
         return dto;
+    }
+    @DeleteMapping("test")
+    public void delete() {
     }
 }

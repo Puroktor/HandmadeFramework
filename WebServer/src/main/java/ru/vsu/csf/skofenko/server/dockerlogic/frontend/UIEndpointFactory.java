@@ -29,14 +29,11 @@ public class UIEndpointFactory {
         for (Parameter parameter : method.getParameters()) {
             Param paramAnnotation = parameter.getDeclaredAnnotation(Param.class);
             RequestBody requestBodyAnnotation = parameter.getDeclaredAnnotation(RequestBody.class);
-
             if (paramAnnotation != null) {
                 UIField uiField = UIFieldFactory.createUIField(parameter, parameter.getParameterizedType(), paramAnnotation.value());
                 queryParams.add(uiField);
             } else if (requestBodyAnnotation != null) {
-                List<UIField> fields = Arrays.stream(parameter.getType().getDeclaredFields())
-                        .map(field -> UIFieldFactory.createUIField(field, field.getGenericType(), field.getName()))
-                        .toList();
+                List<UIField> fields = getUIFields(parameter.getType());
                 String bodyName = UIFieldFactory.getFieldDisplayName(parameter, parameter.getParameterizedType(), parameter.getName());
                 requestBody = new AngularRequestBody(bodyName, fields);
             } else {
@@ -44,6 +41,13 @@ public class UIEndpointFactory {
             }
         }
         UIRequestType uiRequestType = RequestTypeUtil.toUIType(requestType);
-        return new AngularEndpoint(methodDisplayName, mapping, uiRequestType, queryParams, requestBody);
+        List<UIField> responseFields = getUIFields(method.getReturnType());
+        return new AngularEndpoint(methodDisplayName, mapping, uiRequestType, queryParams, requestBody, responseFields);
+    }
+
+    private List<UIField> getUIFields(Class<?> typeClass) {
+        return Arrays.stream(typeClass.getDeclaredFields())
+                .map(field -> UIFieldFactory.createUIField(field, field.getGenericType(), field.getName()))
+                .toList();
     }
 }

@@ -29,8 +29,13 @@
         <dependency>
             <groupId>com.github.Puroktor.ui-generator</groupId>
             <artifactId>ui-generator-core</artifactId>
-            <version>8148e5ec</version>
+            <version>78b01907</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>ru.vsu.csf.skofenko</groupId>-->
+<!--            <artifactId>ui-generator-core</artifactId>-->
+<!--            <version>1.0.0</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
