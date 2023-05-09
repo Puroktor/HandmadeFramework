@@ -1,9 +1,10 @@
 package ru.vsu.csf.skofenko.server.http;
 
+import lombok.RequiredArgsConstructor;
 import ru.vsu.csf.framework.http.HttpStatus;
 import ru.vsu.csf.skofenko.server.Application;
 import ru.vsu.csf.skofenko.server.http.request.HttpRequest;
-import ru.vsu.csf.skofenko.server.http.request.RequestType;
+import ru.vsu.csf.framework.http.RequestType;
 import ru.vsu.csf.skofenko.server.http.response.HttpResponse;
 
 import java.io.IOException;
@@ -15,13 +16,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class Server implements Runnable {
 
     private final Socket clientSocket;
-
-    public Server(Socket clientSocket) {
-        this.clientSocket = clientSocket;
-    }
 
     @Override
     public void run() {

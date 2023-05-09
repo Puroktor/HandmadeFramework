@@ -10,8 +10,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
-    HttpResponse can send response by itself
+/**
+ *   HttpResponse can send response by itself
  */
 public class HttpResponse {
 

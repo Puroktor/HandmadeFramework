@@ -16,7 +16,7 @@ import ru.vsu.csf.skofenko.testapplication.service.TestService;
 
 import java.util.List;
 
-@Controller("api")
+@Controller(value = "api")
 public class TestController {
     @Inject
     private TestService testService;

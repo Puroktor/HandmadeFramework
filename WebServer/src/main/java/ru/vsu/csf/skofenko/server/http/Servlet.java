@@ -1,11 +1,14 @@
 package ru.vsu.csf.skofenko.server.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ru.vsu.csf.skofenko.server.Application;
+import ru.vsu.csf.skofenko.ui.generator.api.core.UI;
 import ru.vsu.csf.framework.http.*;
-import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
 import ru.vsu.csf.skofenko.server.dockerlogic.Endpoint;
+import ru.vsu.csf.skofenko.server.dockerlogic.EndpointManager;
+import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
+import ru.vsu.csf.skofenko.server.dockerlogic.frontend.UIFactory;
 import ru.vsu.csf.skofenko.server.http.request.HttpRequest;
-import ru.vsu.csf.skofenko.server.http.request.RequestType;
 import ru.vsu.csf.skofenko.server.http.response.HttpResponse;
 
 import java.io.IOException;
@@ -13,15 +16,33 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarFile;
 
 public class Servlet {
 
     private final ApplicationContext applicationContext;
+    private final String baseUrl;
 
     public Servlet(JarFile jar) {
         this.applicationContext = new ApplicationContext(jar);
+        this.baseUrl ="http://localhost:%d/%s".formatted(Application.PORT,
+                applicationContext.getResourcePath().getFileName());
+        startUI();
+    }
+
+    private void startUI() {
+        Path resourcePath = applicationContext.getResourcePath();
+        EndpointManager endpointManager = applicationContext.getEndpointManager();
+        UI ui = UIFactory.createAngularUI(baseUrl, resourcePath, endpointManager);
+
+        boolean overrideUI = "true".equals(applicationContext.getProperty("override-ui"));
+        if (ui.create(overrideUI)) {
+            if ("true".equals(applicationContext.getProperty("startup-ui"))){
+                new Thread(ui).start();
+            }
+        }
     }
 
     private String parseMapping(HttpRequest request) {
@@ -79,11 +100,10 @@ public class Servlet {
                 }
             }
         }
-        response.putHeader("Content-Type", contentType);
         response.setBody(body);
     }
 
-    public void doResponse(HttpRequest request, HttpResponse response) throws IOException {
+    public void doResponse(HttpRequest request, HttpResponse response) throws Exception {
         RequestType type = request.getRequestType();
         if (type.equals(RequestType.OTHER)) {
             response.setStatus(HttpStatus.NOT_IMPLEMENTED);
@@ -101,19 +121,14 @@ public class Servlet {
             return;
         }
         ObjectMapper mapper = new ObjectMapper();
-        Object[] params = parseParams(endpoint.method(), request, mapper);
         try {
+            Object[] params = parseParams(endpoint.method(), request, mapper);
             setResponse(response, endpoint, params, mapper);
         } catch (InvocationTargetException invException) {
-            try {
-                Exception cause = (Exception) invException.getCause();
-                endpoint = applicationContext.getEndpointManager().fetchExceptionPoint(cause.getClass())
-                        .orElseThrow(() -> invException);
-                setResponse(response, endpoint, new Object[]{cause}, mapper);
-            } catch (Exception e) {
-                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                e.printStackTrace();
-            }
+            Exception cause = (Exception) invException.getCause();
+            endpoint = applicationContext.getEndpointManager().fetchExceptionPoint(cause.getClass())
+                    .orElseThrow(() -> invException);
+            setResponse(response, endpoint, new Object[]{cause}, mapper);
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
             e.printStackTrace();

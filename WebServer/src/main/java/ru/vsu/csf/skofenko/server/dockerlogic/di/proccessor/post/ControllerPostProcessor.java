@@ -1,14 +1,14 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.post;
 
+import org.apache.commons.lang3.StringUtils;
 import ru.vsu.csf.framework.di.Controller;
+import ru.vsu.csf.framework.http.RequestType;
 import ru.vsu.csf.framework.http.mapping.DeleteMapping;
 import ru.vsu.csf.framework.http.mapping.GetMapping;
 import ru.vsu.csf.framework.http.mapping.PostMapping;
 import ru.vsu.csf.framework.http.mapping.PutMapping;
 import ru.vsu.csf.skofenko.server.dockerlogic.Endpoint;
-import ru.vsu.csf.skofenko.server.dockerlogic.EndpointManager;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.ApplicationContext;
-import ru.vsu.csf.skofenko.server.http.request.RequestType;
 
 import java.lang.reflect.Method;
 
@@ -26,17 +26,29 @@ public class ControllerPostProcessor implements PostProcessor {
             PostMapping postMapping = method.getAnnotation(PostMapping.class);
             PutMapping putMapping = method.getAnnotation(PutMapping.class);
             DeleteMapping deleteMapping = method.getAnnotation(DeleteMapping.class);
-            EndpointManager manager = applicationContext.getEndpointManager();
+            String mapping = null;
+            RequestType requestType = null;
             if (getMapping != null) {
-                manager.putEndpoint(RequestType.GET, "%s/%s".formatted(annotation.value(), getMapping.value()), new Endpoint(bean, method));
+                mapping = createMapping(annotation.value(), getMapping.value());
+                requestType = RequestType.GET;
             } else if (postMapping != null) {
-                manager.putEndpoint(RequestType.POST, "%s/%s".formatted(annotation.value(), postMapping.value()), new Endpoint(bean, method));
+                mapping = createMapping(annotation.value(), postMapping.value());
+                requestType = RequestType.POST;
             } else if (putMapping != null) {
-                manager.putEndpoint(RequestType.PUT, "%s/%s".formatted(annotation.value(), putMapping.value()), new Endpoint(bean, method));
+                mapping = createMapping(annotation.value(), putMapping.value());
+                requestType = RequestType.PUT;
             } else if (deleteMapping != null) {
-                manager.putEndpoint(RequestType.DELETE, "%s/%s".formatted(annotation.value(), deleteMapping.value()), new Endpoint(bean, method));
+                mapping = createMapping(annotation.value(), deleteMapping.value());
+                requestType = RequestType.DELETE;
+            }
+            if (mapping != null) {
+                applicationContext.getEndpointManager().putEndpoint(requestType, mapping, new Endpoint(bean, method));
             }
         }
         return bean;
+    }
+
+    private String createMapping(String baseMapping, String endpointMapping) {
+        return StringUtils.isBlank(endpointMapping) ? baseMapping : "%s/%s".formatted(baseMapping, endpointMapping);
     }
 }

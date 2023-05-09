@@ -1,27 +1,34 @@
 package ru.vsu.csf.skofenko.server.dockerlogic.di;
 
+import lombok.Getter;
+import ru.vsu.csf.framework.di.ResourceManager;
 import ru.vsu.csf.skofenko.server.dockerlogic.EndpointManager;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.configuration.BeanConfiguration;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.configuration.WebBeanConfiguration;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.initialision.InitialisationProcessor;
 import ru.vsu.csf.skofenko.server.dockerlogic.di.proccessor.post.PostProcessor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.jar.JarFile;
 
+@Getter
 public class ApplicationContext {
     private final JarFile jarFile;
     private final EndpointManager endpointManager;
     private final BeanConfiguration beanConfiguration;
+    private final Path resourcePath;
+    private final Properties properties;
     private Collection<Object> beans;
 
     public ApplicationContext(JarFile jarFile) {
         this.jarFile = jarFile;
         endpointManager = new EndpointManager();
         beanConfiguration = new WebBeanConfiguration();
+        properties = new Properties();
+        resourcePath = ContextLoader.getResourceFile(jarFile).toPath();
 
         Collection<Class<?>> classes = ContextLoader.getAllClasses(jarFile);
         beans = new ArrayList<>();
@@ -39,6 +46,19 @@ public class ApplicationContext {
                 .forEach(beans::add);
 
         beans = beans.stream().map(this::runPostProcessors).toList();
+        loadProperties();
+    }
+
+    private void loadProperties() {
+        try {
+            String propertiesPath = getBean(ResourceManager.class).getPath("application.properties");
+            properties.load(new FileInputStream(propertiesPath));
+        } catch (IOException ignored) {
+        }
+    }
+
+    public String getProperty(String key) {
+        return properties.getProperty(key);
     }
 
     private <T> T runPostProcessors(T initialBean) {
@@ -57,18 +77,5 @@ public class ApplicationContext {
             throw new IllegalStateException("0 or > 1 bean(s) of class" + clazz);
         }
         return (T) suitableBeans.get(0);
-    }
-
-
-    public EndpointManager getEndpointManager() {
-        return endpointManager;
-    }
-
-    public Collection<Object> getBeans() {
-        return beans;
-    }
-
-    public JarFile getJarFile() {
-        return jarFile;
     }
 }

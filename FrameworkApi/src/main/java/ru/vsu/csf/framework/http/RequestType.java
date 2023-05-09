@@ -1,4 +1,4 @@
-package ru.vsu.csf.skofenko.server.http.request;
+package ru.vsu.csf.framework.http;
 
 public enum RequestType {
     GET,
