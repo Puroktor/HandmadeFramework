@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @UtilityClass
@@ -42,7 +43,8 @@ public class UIEndpointFactory {
         }
         UIRequestType uiRequestType = RequestTypeUtil.toUIType(requestType);
         List<UIField> responseFields = getUIFields(method.getReturnType());
-        return new AngularEndpoint(methodDisplayName, mapping, uiRequestType, queryParams, requestBody, responseFields);
+        return new AngularEndpoint(methodDisplayName, mapping, uiRequestType, Collections.emptyList(),
+                queryParams, requestBody, responseFields);
     }
 
     private List<UIField> getUIFields(Class<?> typeClass) {
